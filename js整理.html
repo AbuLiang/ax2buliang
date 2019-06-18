@@ -5889,34 +5889,34 @@
 <Q&A 233> BFC
 
         
-                    Formatting context(格式化上下文) 是 W3C CSS2.1 规范中的一个概念。它是页面中的一块渲染区域，并且有一套渲染规则，它决定了其子元素将如何定位，以及和其他元素的关系和相互作用。
+        Formatting context(格式化上下文) 是 W3C CSS2.1 规范中的一个概念。它是页面中的一块渲染区域，
+        并且有一套渲染规则，它决定了其子元素将如何定位，以及和其他元素的关系和相互作用。
 
-        二、BFC 概念
-                    BFC 即 Block Formatting Contexts (块级格式化上下文)，它属于上述定位方案的普通流。
+    二、BFC 概念
+                BFC 即 Block Formatting Contexts (块级格式化上下文)，它属于上述定位方案的普通流。
 
-                    具有 BFC 特性的元素可以看作是隔离了的独立容器，容器里面的元素不会在布局上影响到外面的元素，并且 BFC 具有普通容器所没有的一些特性。
+                具有 BFC 特性的元素可以看作是隔离了的独立容器，容器里面的元素不会在布局上影响到外面的元素，并且 BFC 具有普通容器所没有的一些特性。
 
 
-        三、触发 BFC
-                    只要元素满足下面任一条件即可触发 BFC 特性：
+    三、触发 BFC
+                只要元素满足下面任一条件即可触发 BFC 特性：
 
-                                    · body 根元素
-                                    · 浮动元素：float 除 none 以外的值
-                                    · 绝对定位元素：position (absolute、fixed)
-                                    · display 为 inline-block、table-cells、flex
-                                    · overflow 除了 visible 以外的值 (hidden、auto、scroll)
+                                · body 根元素
+                                · 浮动元素：float 除 none 以外的值
+                                · 绝对定位元素：position (absolute、fixed)
+                                · display 为 inline-block、table-cells、flex
+                                · overflow 除了 visible 以外的值 (hidden、auto、scroll)
 
-        四、BFC 特性及应用
+    四、BFC 特性及应用
 
-                         1. 同一个 BFC 下外边距会发生折叠
-                         
-                            从效果上看，因为两个 div 元素都处于同一个 BFC 容器下 (这里指 body 元素) 所以第一个 div 的下边距和第二个 div 的上边距发生了重叠， 所以两个盒子之间距离只有 100px，而不是 200px。
-                            如果想要避免外边距的重叠，可以将其放在不同的 BFC 容器中。
+                        1. 同一个 BFC 下外边距会发生折叠
+                        
+                        从效果上看，因为两个 div 元素都处于同一个 BFC 容器下 (这里指 body 元素) 所以第一个 div 的下边距和第二个 div 的上边距发生了重叠， 
+                        所以两个盒子之间距离只有 100px，而不是 200px。如果想要避免外边距的重叠，可以将其放在不同的 BFC 容器中。
 
-                         2. BFC 可以包含浮动的元素（清除浮动）
+                        2. BFC 可以包含浮动的元素（清除浮动）
 
-                            浮动的元素会脱离普通文档流, 由于容器内元素浮动，脱离了文档流，所以容器只剩下 2px 的边距高度。如果使触发容器的 BFC，那么容器将会包裹着浮动元素。
-
+                        浮动的元素会脱离普通文档流, 由于容器内元素浮动，脱离了文档流，所以容器只剩下 2px 的边距高度。如果使触发容器的 BFC，那么容器将会包裹着浮动元素。
 
 
 <Q&A 234> Vue 文档
@@ -5932,7 +5932,13 @@
                     v-on:click="reverseMessage"
                     <input v-model="message"> // 实现表单输入和应用状态之间的双向绑定(Object.defineProperty)
 
-<Q&A 235>
+<Q&A 235> setTimeout 
+
+        js: setTimeout setInteral 在任务队列尾部添加事件，等同步任务和任务队列现有任务全部执行完才开始
+        Node.js： 
+                process.nextTick 可以在当前"执行栈"的尾部----下一次Event Loop（主线程读取"任务队列"）之前----触发回调函数。它指定的任务总是发生在所有异步任务之前
+                setImmediate  是在当前"任务队列"的尾部添加事件，也就是说，它指定的任务总是在下一次Event Loop时执行
+
 <Q&A 236>
 <Q&A 237>
 <Q&A 238>
