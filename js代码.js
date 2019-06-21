@@ -1161,3 +1161,180 @@ function getResponseSize(url) {
 //     pRemainingProfit += Profit[pHeight];
 //     pHeight--;
 // }
+
+
+/**
+ * JS打乱数组
+*/
+function getArrRandomly(arr) {
+    var len = arr.length;
+    for (var i = 0; i < len; i++) {
+        var randomIndex = Math.floor(Math.random()*(len-i));//这里一定要注意，后面不管是（i+1）还是（len-i），它们是时变的。
+        var itemAtIndex = arr[randomIndex];
+        arr[randomIndex] = arr[i];
+        arr[i] = itemAtIndex;
+    }
+    return arr;
+}
+
+
+/**
+ * JS bind 实现
+*/
+if (!Function.prototype.bind) {
+    Function.prototype.bind = function () {
+        var self = this,                        // 保存原函数
+            context = [].shift.call(arguments), // 保存需要绑定的this上下文
+            args = [].slice.call(arguments);    // 剩余的参数转为数组
+        return function () {                    // 返回一个新函数
+            self.apply(context,[].concat.call(args, [].slice.call(arguments)));
+        }
+    }
+}
+
+Function.prototype.bind = function (...arg) {
+    var self = this;
+		var newArr = [...arg];         // 保存原函数
+    var context = newArr.shift(); // 保存需要绑定的this上下文
+    return function (...arg2) {
+				var arr = [...newArr];  
+				Array.prototype.push.apply(arr,arg2)
+				self.apply(context,arr);
+    }
+}
+
+/**
+ *  懒加载
+ * 
+ * offsetTop 返回当前元素相对于其 offsetParent 元素的顶部的距离
+ * window.innerHeight 浏览器窗口的视口（viewport）高度（以像素为单位）；如果有水平滚动条，也包括滚动条高度。
+ * window.pageYOffset 只读属性 是 scrollY 的别名。
+ * scrollY 返回文档在垂直方向已滚动的像素值。
+ */
+let lazyImages = [...document.querySelectorAll('.lazy-image')]
+let inAdvance = 300 // 自定义一个高度，当距离300px到达图片时加载
+
+function lazyLoad() {
+    lazyImages.forEach(image => {
+        if (image.offsetTop < window.innerHeight + window.pageYOffset + inAdvance) { // 距离xxpx时加载图片
+            image.src = image.dataset.src
+            image.onload = () => image.classList.add('loaded')
+        }
+    })
+
+    // if all loaded removeEventListener
+}
+
+lazyLoad()
+
+window.addEventListener('scroll', _.throttle(lazyLoad, 16)) // 用到了lodash的节流函数
+window.addEventListener('resize', _.throttle(lazyLoad, 16))
+
+
+/**
+ * js 实现 promise
+*/
+class PromiseClone {
+	constructor (process) {
+		this.status = 'pending';
+		this.msg = '';
+		process(this.resolve.bind(this), this.reject.bind(this));
+		return this;
+	}
+	resolve (val) {
+		this.status = 'fulfilled';
+		this.msg = val;
+	}
+	reject (err) {
+		this.status = 'rejected';
+		this.msg = err
+	}
+	then (fufilled, reject) {
+		if (this.status === 'fulfilled') {
+			fulfilled(this.msg);
+		}
+		if (this.status === 'rejected') {
+			reject(this.msg);
+		}
+	}
+}
+
+/**
+ * 发布订阅模式
+*/
+const event = {
+	clientList: [],
+	listen: function(key, fn) {
+		if (this.clientListen[key]) {
+			this.clientList[key] = []
+		}
+		this.clientList[key].push(fn)
+	},
+	trigger: function() {
+		const key = Array.prototype.shift.call(arguments)
+		const fns = this.clientList[key]
+		if ( !fns || fns.length === 0 ) {
+			return false
+		}
+		for (let i = 0, fn; fn = fns[i++];) {
+			fn.apply(this, arguments)
+		}
+	},
+	remove: function(key, fn) {
+		const fns = this.clientList[key]
+		if (!fns) {
+			return false
+		}
+		if (!fn) {
+			fns && (fns.length = 0)
+		} else {
+			for (let l = fns.length - 1; l>=0; l--) {
+				const _fn = fns[l]
+				if (_fn === fn) {
+					fns.splice(l, 1)
+				}
+			}
+		}
+	}
+}
+
+const installEvent = (obj) => {
+	for (let i in event) {
+		obj[i] = event[i]
+	}
+}
+
+/**
+ *  JSONP
+*/
+var script = document.createElement('script');
+script.type = 'text/javascript';
+script.src = 'http://www.domain-com:8080/login?user=admin&callback=onBack'
+function onBack(res) {
+	alert(JSON.stringify(res));
+}
+
+/**
+ * 获取 url 参数
+*/
+
+export function getQueryString(name) { 
+  var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i"); 
+  var r = window.location.search.substr(1).match(reg); 
+  if (r != null) 
+    return decodeURI(r[2]); 
+  return null;
+}
+// 或
+export function getQueryStringByStr(data) {
+  const url = data;
+  const theRequest = {};
+  if (url.indexOf('?') !== -1) {
+      const str = url.substr(1);
+      const strs = str.split('&');
+      for (let i = 0; i < strs.length; i += 1) {
+      theRequest[strs[i].split('=')[0]] = unescape(strs[i].split('=')[1]);
+      }
+  }
+  return theRequest;
+}

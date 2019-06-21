@@ -5939,26 +5939,331 @@
                 process.nextTick 可以在当前"执行栈"的尾部----下一次Event Loop（主线程读取"任务队列"）之前----触发回调函数。它指定的任务总是发生在所有异步任务之前
                 setImmediate  是在当前"任务队列"的尾部添加事件，也就是说，它指定的任务总是在下一次Event Loop时执行
 
-<Q&A 236>
-<Q&A 237>
-<Q&A 238>
-<Q&A 239>
-<Q&A 240>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
+<Q&A 236> JS ajax
+    <script>
+        //步骤一:创建异步对象
+        var ajax = new XMLHttpRequest();
+        //步骤二:设置请求的url参数,参数一是请求的类型,参数二是请求的url,可以带参数,动态的传递参数starName到服务端
+        ajax.open('get','getStar.php?starName='+name);
+        //步骤三:发送请求
+        ajax.send();
+        //步骤四:注册事件 onreadystatechange 状态改变就会调用
+        ajax.onreadystatechange = function () {
+        if (ajax.readyState==4 &&ajax.status==200) {
+            //步骤五 如果能够进到这个判断 说明 数据 完美的回来了,并且请求的页面是存在的
+        　　　　console.log(ajax.responseText);//输入相应的内容
+        　　}
+        }
+    </script>
+        
+<Q&A 237> JS 预编译
+        js预编译实现过程：
+        
+        1.js首先扫描var关键字，提前到顶端；
+        
+        2.然后扫描function定义，提到var之后
+        
+        3.然后再顺序执行
+
+<Q&A 238> JS bind 实现
+        <script>
+            if (!Function.prototype.bind) {
+                Function.prototype.bind = function () {
+                    var self = this,                        // 保存原函数
+                        context = [].shift.call(arguments), // 保存需要绑定的this上下文
+                        args = [].slice.call(arguments);    // 剩余的参数转为数组
+                    return function () {                    // 返回一个新函数
+                        self.apply(context,[].concat.call(args, [].slice.call(arguments)));
+                    }
+                }
+            }
+            
+            Function.prototype.bind = function (...arg) {
+                var self = this;
+                    var newArr = [...arg];         // 保存原函数
+                var context = newArr.shift(); // 保存需要绑定的this上下文
+                return function (...arg2) {
+                            var arr = [...newArr];  
+                            Array.prototype.push.apply(arr,arg2)
+                            self.apply(context,arr);
+                }
+            }
+        </script>
+
+<Q&A 239> 懒加载
+    <script>
+        /**
+        * offsetTop 返回当前元素相对于其 offsetParent 元素的顶部的距离
+        * window.innerHeight 浏览器窗口的视口（viewport）高度（以像素为单位）；如果有水平滚动条，也包括滚动条高度。
+        * window.pageYOffset 只读属性 是 scrollY 的别名。
+        * scrollY 返回文档在垂直方向已滚动的像素值。
+        */
+       let lazyImages = [...document.querySelectorAll('.lazy-image')]
+       let inAdvance = 300 // 自定义一个高度，当距离300px到达图片时加载
+       
+       function lazyLoad() {
+           lazyImages.forEach(image => {
+               if (image.offsetTop < window.innerHeight + window.pageYOffset + inAdvance) { // 距离xxpx时加载图片
+                   image.src = image.dataset.src
+                   image.onload = () => image.classList.add('loaded')
+               }
+           })
+       
+           // if all loaded removeEventListener
+       }
+       
+       lazyLoad()
+       
+       window.addEventListener('scroll', _.throttle(lazyLoad, 16)) // 用到了lodash的节流函数
+       window.addEventListener('resize', _.throttle(lazyLoad, 16))
+    </script>
+
+<Q&A 240> promise 实现
+
+    <script>
+        class PromiseClone {
+            constructor (process) {
+                this.status = 'pending';
+                this.msg = '';
+                process(this.resolve.bind(this), this.reject.bind(this));
+                return this;
+            }
+            resolve (val) {
+                this.status = 'fulfilled';
+                this.msg = val;
+            }
+            reject (err) {
+                this.status = 'rejected';
+                this.msg = err
+            }
+            then (fufilled, reject) {
+                if (this.status === 'fulfilled') {
+                    fulfilled(this.msg);
+                }
+                if (this.status === 'rejected') {
+                    reject(this.msg);
+                }
+            }
+        }
+    </script>
+
+<Q&A 241> js 发布/订阅模式
+
+    观察者模式： subject-observer
+        目标事件改变，通知观察者： subject --> observer
+        观察者需要直接订阅目标事件： observer --> subject
+
+    发布/订阅模式： 发布者 -- 调度中心 -- 订阅者
+        发布相关事件： 发布者 --> 调度中心
+        从发布者接收事件，向订阅者发布事件： 发布者 --> 调度中心 <-- 订阅者
+        从事件通道注册想订阅的事件： 订阅者 --> 调度中心
+
+    <script>
+        const event = {
+            clientList: [],
+            listen: function(key, fn) {
+                if (this.clientListen[key]) {
+                    this.clientList[key] = []
+                }
+                this.clientList[key].push(fn)
+            },
+            trigger: function() {
+                const key = Array.prototype.shift.call(arguments)
+                const fns = this.clientList[key]
+                if ( !fns || fns.length === 0 ) {
+                    return false
+                }
+                for (let i = 0, fn; fn = fns[i++];) {
+                    fn.apply(this, arguments)
+                }
+            },
+            remove: function(key, fn) {
+                const fns = this.clientList[key]
+                if (!fns) {
+                    return false
+                }
+                if (!fn) {
+                    fns && (fns.length = 0)
+                } else {
+                    for (let l = fns.length - 1; l>=0; l--) {
+                        const _fn = fns[l]
+                        if (_fn === fn) {
+                            fns.splice(l, 1)
+                        }
+                    }
+                }
+            }
+        }
+        
+        const installEvent = (obj) => {
+            for (let i in event) {
+                obj[i] = event[i]
+            }
+        }
+    </script>
+    
+<Q&A 242> JSONP
+
+    <script>
+        var script = document.createElement('script');
+        script.type = 'text/javascript';
+      
+        // 传参并指定回调执行函数为onBack
+        script.src = 'http://www.domain-com:8080/login?user=admin&callback=onBack';
+        document.head.appendChild(script);
+      
+        // 回调执行函数
+        function onBack(res) {
+            alert(JSON.stringify(res));
+        }
+    </script>
+      
+<Q&A 243> JS 获取url参数
+
+    <script>
+        function getQueryString(name) { 
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i"); 
+            var r = window.location.search.substr(1).match(reg); // window.location 有关文档当前位置信息  .search 匹配url中的 ？
+            if (r != null) return unescape(r[2]); return null;  // 不要使用unescape去解码URLS，使用decodeURI替代。
+        }
+        // 或
+        export function getQueryStringByStr(data) {
+            const url = data; // 获取url中"?"符后的字串
+            const theRequest = {};
+            if (url.indexOf('?') !== -1) {
+                const str = url.substr(1);
+                const strs = str.split('&');
+                for (let i = 0; i < strs.length; i += 1) {
+                theRequest[strs[i].split('=')[0]] = unescape(strs[i].split('=')[1]);
+                }
+            }
+            return theRequest;
+        }
+    </script>
+        
+<Q&A 244> vue-router 实现与解析
+
+<Q&A 245> diff 算法
+
+<Q&A 246> 浏览器引擎工作流程
+
+    解析html绘制DOM树 --> 加载解析CSS创建style rules --> 绘制Render树 --> 布局 layout 计算各组件在屏幕上的位置和大小 --> 渲染painting
+
+<Q&A 247> why diff　虚拟DOM
+
+        【传统DOM操作(eg:innerHtml)】：render html+重建所有DOM元素
+        【虚拟DOM】：render 虚拟DOM + diff算法+更新必要的DOM元素
+
+        浏览器引擎工作流程大致分为： 解析HTML绘制DOM tree  加载CSS构建Style Rules  绘制Render tree  布局Layout计算各组件在屏幕上的位置和大小  渲染painting
+
+        render执行的结果得到的并不是真正的DOM节点，而仅仅是javascript对象，称之为虚拟DOM
+
+        利用js原生api和jQuery等修改DOM时，浏览器会从构建DOM开始执行一边完整的流程。例如在一次操作中需要修改10个DOM节点，最好的方式是一次性完成DOM的构建，
+        然后再进行后续操作。但浏览器没那么只能，无法预知后续的9次修改，收到第一次更新请求后就立即执行流程，所以会连续执行10次完整的流程。显然像计算DOM节点坐标值都是白白浪费性能，当前一次DOM更新后，
+        后续的节点坐标便会发生变。
+        即使计算机硬件一直更迭，操作DOM仍然是非常昂贵的，频繁操作仍会出现页面卡顿，影响用户体验，真实的DOM节点，即使一个div也包含很多属性。
+        虚拟DOM就是为了解决这个浏览器性能问题而提出的。如果一次操作中包含10更新DOM，虚拟DOM不会直接操作DOM，而是先将10次更新的diff内容保存到本地的一个js对象中，最后将js对象一次性attach到DOM树上，
+        再通知浏览器去执行绘制工作，从而节省大量计算工作。
+    
+        虚拟DOM就是在DOM的基础上在内存建立一个抽象层，所有针对数据和状态的任何改动，都会被自动且高效的同步到虚拟DOM上，最后在批量同步到DOM中。
+    
+        工作原理：
+        React会在内存中维护一个虚拟DOM，当数据变化时，React会自动更新虚拟DOM，比较新的虚拟DOM和旧的虚拟DOM的不同，得出一个diff，然后将diff放到队列中，最后批量更新diff到DOM上
+        优点：DOM上的修改只是部分变更，渲染高效，提高网页性能
+        缺点：首次渲染大量DOM时，多了一层虚拟DOM的计算，比innerHtml慢
+
+        对虚拟DOM的理解往往停留在：通过JavaScript对象模拟原生DOM，加上DOM Diff 极大提升了DOM操作的性能。然而，虚拟DOM最大的意义不在于性能的提升（JavaScript对象比DOM对象性能高），
+        而在于抽象了DOM的具体实现（对DOM进行了一层抽象），这在浏览器中使用 React时不是特别明显，因为写的DOM标签跟原生的没有区别，并且最终都被渲染成了DOM，在React Native中将会有很好的说明。
+
+        diff算法
+        <script>
+            let result = [];
+            // 比较叶子节点
+            const diffLeafs = function (beforeLeaf, afterLeaf) {
+                // 获取较大节点树的长度
+                let count = Math.max(beforeLeaf.children.length, afterLeaf.children.length);
+                // 循环遍历
+                for (let i = 0; i < count; i++) {
+                    const beforeTag = beforeLeaf.children[i];
+                    const afterTag = afterLeaf.children[i];
+                    // 添加 afterTag 节点
+                    if (beforeTag === undefined) {
+                        result.push({ type: "add", element: afterTag });
+                        // 删除 beforeTag 节点
+                    } else if (afterTag === undefined) {
+                        result.push({ type: "remove", element: beforeTag });
+                        // 节点名改变时，删除 beforeTag 节点，添加 afterTag 节点
+                    } else if (beforeTag.tagName !== afterTag.tagName) {
+                        result.push({ type: "remove", element: beforeTag });
+                        result.push({ type: "add", element: afterTag });
+                        // 节点不变而内容改变时，改变节点
+                    } else if (beforeTag.innerHTML !== afterTag.innerHTML) {
+                        if (beforeTag.children.length === 0) {
+                            result.push({
+                                type: "changed",
+                                beforeElement: beforeTag,
+                                afterElement: afterTag,
+                                html: afterTag.innerHTML
+                            });
+                        } else {
+                            // 递归比较
+                            diffLeafs(beforeTag, afterTag);
+                        }
+                    }
+                }
+                return result;
+            }
+        </script>
+    
+<Q&A 248> CSS
+
+        无限旋转
+    <style>
+        @keyframes rotate{
+            0%{
+                transform: rotate(0);
+              }
+            50%{
+                transform:rotate(200deg);
+            }
+            100%{
+                 transform: rotate(0);
+                }
+            }
+         
+        .rotate{
+            transition: 0.5s;
+            transform-origin: 30px 30px;  
+            animation: rotate 10s linear infinite;  /*开始动画后无限循环，用来控制rotate*/
+        }
+    </style>
+
+<Q&A 249> 卡牌翻转
+    <style>
+        .wutai{
+            position: relative;
+            perspective: 800px;
+            width: 220px;
+            height: 292px;
+            transform-style: preserve-3d;
+        }
+        #trans{
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transition: all 1s;
+            transform-style: preserve-3d;
+        }
+                .back{transform: rotateY(180deg);}
+                .flip{transform: rotateY(180deg);}
+    </style>
+
+<Q&A 250>
+<Q&A 251>
+<Q&A 252>
+<Q&A 253>
+<Q&A 254>
+<Q&A 255>
 <Q&A 125>
 <Q&A 125>
 <Q&A 125>
