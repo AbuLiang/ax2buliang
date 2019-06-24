@@ -155,11 +155,64 @@ arr2.forEach((item, index) => {
 /** 
  * js归并排序实现数组sort方法
  */
+function merge(left, right) {
+	var tmp = [];
+	while (left.length && right.length) {
+		if (left[0] < right[0])
+			tmp.push(left.shift());
+		else
+			tmp.push(right.shift());
+	}
+	return tmp.concat(left, right);
+}
+
+function mergeSort(a) {
+	if (a.length === 1)
+		return a;
+  var mid = ~~(a.length / 2),
+      left = a.slice(0, mid),
+      right = a.slice(mid);
+	
+	return merge(mergeSort(left), mergeSort(right));
+}
+
 
 /** 
  * 原生js实现快排
  * 
  */
+function quickSort(arr, left, right) {
+  var len = arr.length,
+      partitionIndex,
+      left = typeof left != 'number' ? 0 : left,
+      right = typeof right != 'number' ? len - 1 : right;
+
+  if (left < right) {
+      partitionIndex = partition(arr, left, right);
+      quickSort(arr, left, partitionIndex-1);
+      quickSort(arr, partitionIndex+1, right);
+  }
+  return arr;
+}
+
+function partition(arr, left ,right) {     // 分区操作
+  var pivot = left,                      // 设定基准值（pivot） pivot只做记录，移动的是index 和 i，
+      index = pivot + 1;      // index记录大于基准的第一个值，将其与后面小于基准的值交换；交换一次移动到下一个大于值
+  for (var i = index; i <= right; i++) {
+      if (arr[i] < arr[pivot]) {  // 只要i记录的值小于基准，就和index交换，哪怕交换自身或另一个小于值，以便index向下移动
+          swap(arr, i, index);  
+          index++;
+      }       
+  }
+  swap(arr, pivot, index - 1);   // 基准值和最后一个小于他的值交换
+  return index-1;
+}
+
+function swap(arr, i, j) {
+  var temp = arr[i];
+  arr[i] = arr[j];
+  arr[j] = temp;
+}
 
 /** 
  * this指向
@@ -1000,39 +1053,37 @@ getJSON("/json.json").then(function (json) {
 快排
 */ 
 function quickSort(arr, left, right) {
-  var left = typeof left == "number" ? left : 0,
-      right = typeof right == 'number' ? right : arr.length-1,
-      partitionIndex;
-  function swap(arr, i, j) {
-    var temp = arr[i];
-    arr[i] = arr[j];
-    arr[j] = temp;
-  }
-  function sort(arr, left, right) {
-    if (left > right) {
-      return;
-    }
-    partitionIndex = partition(arr, left, right);
-    sort(arr, left, partitionIndex-1);
-    sort(arr, partitionIndex+1, right);
-  }
-  function partition(arr, left, right) {
-    var pivot = left,
-        index = pivot + 1;
-    for (i=index; i<=right; i++) {
-      if (arr[i] < arr[pivot]) {
-        swap(arr, i, index);
-        index++;
-      }
-    }
-    swap(arr, pivot, index-1);
-    return index-1;
+  var len = arr.length,
+      partitionIndex,
+      left = typeof left != 'number' ? 0 : left,
+      right = typeof right != 'number' ? len - 1 : right;
 
+  if (left < right) {
+      partitionIndex = partition(arr, left, right);
+      quickSort(arr, left, partitionIndex-1);
+      quickSort(arr, partitionIndex+1, right);
   }
-  sort(arr, 0, arr.length-1)
   return arr;
 }
 
+function partition(arr, left ,right) {     // 分区操作
+  var pivot = left,                      // 设定基准值（pivot） pivot只做记录，移动的是index 和 i，
+      index = pivot + 1;      // index记录大于基准的第一个值，将其与后面小于基准的值交换；交换一次移动到下一个大于值
+  for (var i = index; i <= right; i++) {
+      if (arr[i] < arr[pivot]) {  // 只要i记录的值小于基准，就和index交换，哪怕交换自身或另一个小于值，以便index向下移动
+          swap(arr, i, index);  
+          index++;
+      }       
+  }
+  swap(arr, pivot, index - 1);   // 基准值和最后一个小于他的值交换
+  return index-1;
+}
+
+function swap(arr, i, j) {
+  var temp = arr[i];
+  arr[i] = arr[j];
+  arr[j] = temp;
+}
 
 
 function getResponseSize(url) {
@@ -1337,4 +1388,18 @@ export function getQueryStringByStr(data) {
       }
   }
   return theRequest;
+}
+
+/**
+ *  回文
+*/
+function palindrome(str) {
+	var newstr = str.replace(/[^0-9a-z]/gi, "");
+	newstr = newstr.toLowerCase();
+	for (var i=0, j=newstr.length-1;i<j;i++,j--) {
+		if (newstr.charAt(i) !== newstr.charAt(j)) {
+			return false;
+		}
+	}
+	return true;
 }

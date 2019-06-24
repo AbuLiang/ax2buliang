@@ -1986,6 +1986,9 @@
 
 <Q&A 111> 说一下 http 2.0
 
+        HTTP/2（超文本传输协议第2版，最初命名为HTTP 2.0），是HTTP协议的的第二个主要版本，使用于万维网。HTTP/2是HTTP协议自1999年HTTP 1.1发布后的首个更新，
+        主要基于SPDY协议（是Google开发的基于TCP的应用层协议，用以最小化网络延迟，提升网络速度，优化用户的网络使用体验）。
+
     https是基于ssl加密的http协议
     http2.0是基于1999年发布1.0后首次更新
     提升访问速度（请求资源所需时间更少，访问更快）
@@ -4798,42 +4801,39 @@
             </script>
         快速
             <script>
-                function quickSort(arr, left, right) {  // 数组长度未必是需要排序的数字长度
+                function quickSort(arr, left, right) {
                     var len = arr.length,
-                        left = typeof left != 'number' ? 0:left,
-                        right = typeof right != 'number' ? len-1:right,
-                        partitionIndex;
-                    
-                    function swap(arr, i, j) {
-                        var temp = arr[i];
-                        arr[i] = arr[j];
-                        arr[j] = temp;
-                    }
-
-                    function partition(arr, left, right) {
-                        var pivot = left, // 基准， pivot只做记录，移动的是index 和 i，
-                            index = pivot + 1; // index记录大于基准的第一个值，将其与后面小于基准的值交换；交换一次移动到下一个大于值
-                        for (i = index; i <= right; i++) {
-                            if (arr[i] < arr[pivot]) { // 只要i记录的值小于基准，就和index交换，哪怕交换自身或另一个小于值，以便index向下移动
-                                swap(arr, i, index);
-                                index++;
-                            }
-                        }
-                        swap(arr, index-1, pivot); // 基准值和最后一个小于他的值交换
-                        return index-1;
-                    }
-                    
-                    function sort(arr, left, right) {
-                        if(left > right) {
-                            return;
-                        }
+                        partitionIndex,
+                        left = typeof left != 'number' ? 0 : left,
+                        right = typeof right != 'number' ? len - 1 : right;
+                
+                    if (left < right) {
                         partitionIndex = partition(arr, left, right);
-                        sort(arr, left, partitionIndex-1);
-                        sort(arr, partitionIndex+1, right);
+                        quickSort(arr, left, partitionIndex-1);
+                        quickSort(arr, partitionIndex+1, right);
                     }
-
                     return arr;
                 }
+                
+                function partition(arr, left ,right) {     // 分区操作
+                    var pivot = left,                      // 设定基准值（pivot） pivot只做记录，移动的是index 和 i，
+                        index = pivot + 1;      // index记录大于基准的第一个值，将其与后面小于基准的值交换；交换一次移动到下一个大于值
+                    for (var i = index; i <= right; i++) {
+                        if (arr[i] < arr[pivot]) {  // 只要i记录的值小于基准，就和index交换，哪怕交换自身或另一个小于值，以便index向下移动
+                            swap(arr, i, index);  
+                            index++;
+                        }       
+                    }
+                    swap(arr, pivot, index - 1);   // 基准值和最后一个小于他的值交换
+                    return index-1;
+                }
+                
+                function swap(arr, i, j) {
+                    var temp = arr[i];
+                    arr[i] = arr[j];
+                    arr[j] = temp;
+                }
+
             </script>
 
         堆排
@@ -6258,27 +6258,245 @@
                 .flip{transform: rotateY(180deg);}
     </style>
 
-<Q&A 250>
-<Q&A 251>
-<Q&A 252>
-<Q&A 253>
-<Q&A 254>
-<Q&A 255>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
+<Q&A 250> HTTPS和HTTP的区别主要如下：
+
+    1、https协议需要到ca申请证书，一般免费证书较少，因而需要一定费用。
+    
+    2、http是超文本传输协议，信息是明文传输，https则是具有安全性的ssl加密传输协议。
+    
+    3、http和https使用的是完全不同的连接方式，用的端口也不一样，前者是80，后者是443。
+    
+    4、http的连接很简单，是无状态的；HTTPS协议是由SSL+HTTP协议构建的可进行加密传输、身份认证的网络协议，比http协议安全。
+    
+<Q&A 251> https 缺点
+
+    （1）HTTPS协议握手阶段比较费时，会使页面的加载时间延长近50%，增加10%到20%的耗电；
+
+    （2）HTTPS连接缓存不如HTTP高效，会增加数据开销和功耗，甚至已有的安全措施也会因此而受到影响；
+    
+    （3）SSL证书需要钱，功能越强大的证书费用越高，个人网站、小网站没有必要一般不会用。
+    
+    （4）SSL证书通常需要绑定IP，不能在同一IP上绑定多个域名，IPv4资源不可能支撑这个消耗。
+    
+    （5）HTTPS协议的加密范围也比较有限，在黑客攻击、拒绝服务攻击、服务器劫持等方面几乎起不到什么作用。最关键的，SSL证书的信用链体系并不安全，
+        特别是在某些国家可以控制CA根证书的情况下，中间人攻击一样可行。
+        
+<Q&A 252> http option请求方法
+
+        1、获取服务器支持的HTTP请求方法；
+
+        2、用来检查服务器的性能。
+        
+        其实在正式跨域之前，浏览器会根据需要发起一次预检（也就是option请求），用来让服务端返回允许的方法（如get、post），被跨域访问的Origin（来源或者域），还有是否需要Credentials(认证信息)等。
+        
+<Q&A 253> TCP与UDP的区别
+
+        1、TCP面向连接（如打电话要先拨号建立连接）;UDP是无连接的，即发送数据之前不需要建立连接
+        
+        2、TCP提供可靠的服务。也就是说，通过TCP连接传送的数据，无差错，不丢失，不重复，且按序到达;UDP尽最大努力交付，即不保证可靠交付
+        3、TCP面向字节流，实际上是TCP把数据看成一连串无结构的字节流;UDP是面向报文的
+        UDP没有拥塞控制，因此网络出现拥塞不会使源主机的发送速率降低（对实时应用很有用，如IP电话，实时视频会议等）4、每一条TCP连接只能是点到点的;UDP支持一对一，一对多，多对一和多对多的交互通信
+        5、TCP首部开销20字节;UDP的首部开销小，只有8个字节
+        
+        6、TCP的逻辑通信信道是全双工的可靠信道，UDP则是不可靠信道
+        
+<Q&A 254> http2.0 vs http1.0
+
+        HTTP/2采用二进制格式而非文本格式(二进制协议解析起来更高效、“线上”更紧凑，更重要的是错误更少。)
+        HTTP/2是完全多路复用的，而非有序并阻塞的——只需一个连接即可实现并行
+        使用报头压缩，HTTP/2降低了开销
+        HTTP/2让服务器可以将响应主动“推送”到客户端缓存中
+
+<Q&A 255> 
+    
+        位运算 NOT 由否定号（~）表示，它是 ECMAScript 中为数不多的与二进制算术有关的运算符之一。
+
+        位运算 NOT 是三步的处理过程：
+        
+            把运算数转换成 32 位数字
+            
+            把二进制数转换成它的二进制反码（0->1, 1->0）
+            
+            把二进制数转换成浮点数
+        
+        简单的理解，对任一数值 x 进行按位非操作的结果为 -(x + 1)
+        
+        console.log('~null: ', ~null);       // => -1
+        console.log('~undefined: ', ~undefined);  // => -1
+        console.log('~0: ', ~0);          // => -1
+        console.log('~{}: ', ~{});         // => -1
+        console.log('~[]: ', ~[]);         // => -1
+        console.log('~(1/0): ', ~(1/0));      // => -1
+        console.log('~false: ', ~false);      // => -1
+        console.log('~true: ', ~true);       // => -2
+        console.log('~1.2543: ', ~1.2543);     // => -2
+        console.log('~4.9: ', ~4.9);       // => -5
+        console.log('~(-2.999): ', ~(-2.999));   // => 1
+
+        那么, ~~x就为 -(-(x+1) + 1)
+
+        console.log('~~null: ', ~~null);       // => 0
+        console.log('~~undefined: ', ~~undefined);  // => 0
+        console.log('~~0: ', ~~0);          // => 0
+        console.log('~~{}: ', ~~{});         // => 0
+        console.log('~~[]: ', ~~[]);         // => 0
+        console.log('~~(1/0): ', ~~(1/0));      // => 0
+        console.log('~~false: ', ~~false);      // => 0
+        console.log('~~true: ', ~~true);       // => 1
+        console.log('~~1.2543: ', ~~1.2543);     // => 1
+        console.log('~~4.9: ', ~~4.9);       // => 4
+        console.log('~~(-2.999): ', ~~(-2.999));   // => -2
+
+<Q&A 256> 回文
+
+    <script>
+        function palindrome(str) {
+            var newstr = str.replace(/[^0-9a-z]/gi, "");
+            newstr = newstr.toLowerCase();
+            for (var i=0, j=newstr.length-1;i<j;i++,j--) {
+                if (newstr.charAt(i) !== newstr.charAt(j)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    </script>
+
+<Q&A 257> 节流函数
+
+    <script>
+        function throttle(method,delay,duration){
+            var timer=null;
+            var begin=new Date();    
+            return function(){                
+                var context=this, args=arguments;
+                var current=new Date();        
+                clearTimeout(timer);
+                if(current-begin>=duration){
+                    method.apply(context,args);
+                    begin=current;
+                }else{
+                    timer=setTimeout(function(){
+                        method.apply(context,args);
+                    },delay);
+                }
+            }
+        }
+
+        // 函数消抖
+        function debounce(method,context){
+            clearTimeout(method.tId);
+            method.tId=setTimeout(function(){
+                method.call(context)
+            },300)
+        }
+        function debounce(method,delay){
+            var timer = null; 
+            return function(){
+                var context = this,args = arguments;
+                clearTimeout(timer); 
+                timer = setTimeout(function(){
+                    method.apply(context,args); 
+                },delay);
+            }
+        }
+
+        const throttle = (method, delay, duration) => {
+            const date = new Date();
+            let timer = null;
+            return function (...arg){
+                const current = new Date();
+                clearTimeOut(timer);
+                if(current - data >= duration){
+                    method.apply(this, arg);
+                    date = current;
+                }
+                timer = setTimeOut(() => {
+                    method.apply(this, arg);
+                }, delay)
+            }
+        }
+
+    </script>
+
+<Q&A 258> IndexOf的实现
+
+    <script>
+        function ArrayIndexOf(arr,value,n){ // 从 索引n 开始向后查找
+            var i=isNaN(n)?0:n;//有第三参时
+                i=(i<0)?arr.length+i:i;//第三参为负数时
+            for(i;i<arr.length;i++){
+                if(arr[i]===value){return i;}                   
+            }return -1;
+        }
+    </script>
+        
+<Q&A 259> 响应式设计、自适应设计
+
+    响应式：网站能兼容多个终端，不需要多个版本
+    自适应：网页自适应显示在不同大小终端设备上，需要多个不同版本的页面适配不同终端
+
+    不同点：
+           · 比较直观的不同是：自适应：需要开发多套界面；响应式开发一套界面
+           · 自适应设计 通过检测视口分辨率，来判断当前访问的设备是：pc端、平板、手机，从而请求服务层，返回不同的页面；
+             响应式设计通过检测视口分辨率，针对不同客户端在客户端做代码处理，来展现不同的布局和内容。
+           · 自适应 对页面做的屏幕适配是在一定范围：比如pc端（>1024）一套适配,平板（768-1024）一套适配，手机端（<768）一套适配;
+             响应式一套页面全部适配。（可以想象：响应式设计要考虑的内容要比自适应设计复杂的多）
+
+            Adaptive design (自适应设计实现原理)：是为不同类别的设备建立不同的网页，检测到设备分辨率大小后调用相应的网页。在app横行的当下，
+            目前国内自适应布局应用主要集中在视口已经很稳定的web端，（web端视口大数据[2016]）针对笔记本，台式机进行优化体验。
+
+            响应式设计（Responsive design）是一套界面同时运行到pc端、平板、手机端各个不同的视口。通过检测设备的分辨率，来对页面做出不同的布局和内容。
+
+    响应式优缺点和标志
+        标志
+            · 面包屑菜单
+            · 改变浏览器宽度会在不同分辨率下显示不同的布局
+        优点：
+            · 面对不同分辨率设备灵活性强
+            · 能够快捷解决多设备显示适应问题
+        缺点：
+            · 仅适用布局、信息、框架并不复杂的部门类型网站
+            · 兼容各种设备工作量大，效率低下
+            · 代码累赘，会出现隐藏无用的元素，加载时间加长
+            · 其实这是一种折中性质的设计解决方案，多方面因素影响而达不到最佳效果
+            · 一定程度上改变了网站原有的布局结构，会出现用户混淆的情况
+
+    自适应网站优缺点和标志
+        标志：
+            · 大多只是适配单个终端的主流N个主流视口（2-3个）
+            · 当视口大小低于设置的最小视口时，界面会出现显示不全，溢出，并出现横向滑动指示器（主要出现在pc端，移动端决不允许出现这种情况）
+            · 总体框架不变，横线布局的板块大多会有所减少
+        优点：
+            · 对网站的复杂程度兼容性更大
+            · 实施起来代价更低，
+            · 代码更高效
+            · 测试更容易，运营相对更精准（图片可控性更高）
+        缺点：
+            · 在移动端设计大行其道之下，同一个网站，往往需要为不同的设备开发不同的页面，增加开发成本
+            · 当需求改变时，可能会改动多套代码。流程繁琐。
+
+    服务于设计和 开发
+
+            理论上来说，响应式布局在任何情况下都比自适应布局好一些，但在某些情况下自适应布局更切实际。
+            
+            自适应布局可以让你的设计更加可控，因为你只需要考虑几种状态就万事大吉了。
+            
+            但在响应式布局中你可能需要面对非常多状态——是的，大部分状态之间的区别很小，但它们又的确是不同的，这样一来就很难确切搞清你的设计会是什么样。
+            
+            同时这也带来了测试上的难题，你很难有绝对的把握预测到它会怎样。
+
+<Q&A 260> 
+<Q&A 261> 
+<Q&A 262> 
+<Q&A 263> 
+<Q&A 264> 
+<Q&A 265> 
+<Q&A 266> 
+<Q&A 267> 
+<Q&A 125> 
+<Q&A 125> 
+<Q&A 125> 
 <Q&A 125>
 <Q&A 125>
 <Q&A 125>
