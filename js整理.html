@@ -6440,7 +6440,7 @@
            · 比较直观的不同是：自适应：需要开发多套界面；响应式开发一套界面
            · 自适应设计 通过检测视口分辨率，来判断当前访问的设备是：pc端、平板、手机，从而请求服务层，返回不同的页面；
              响应式设计通过检测视口分辨率，针对不同客户端在客户端做代码处理，来展现不同的布局和内容。
-           · 自适应 对页面做的屏幕适配是在一定范围：比如pc端（>1024）一套适配,平板（768-1024）一套适配，手机端（<768）一套适配;
+           · 自适应 对页面做的屏幕适配是在一定范围：比如pc端（>1024）一套适配,平板（768-1024）一套适配，手机端（<768）一套适配;>
              响应式一套页面全部适配。（可以想象：响应式设计要考虑的内容要比自适应设计复杂的多）
 
             Adaptive design (自适应设计实现原理)：是为不同类别的设备建立不同的网页，检测到设备分辨率大小后调用相应的网页。在app横行的当下，
@@ -6486,7 +6486,322 @@
             
             同时这也带来了测试上的难题，你很难有绝对的把握预测到它会怎样。
 
-<Q&A 260> 
+<Q&A 260> vue 组件通信 全
+
+    全局注册：
+        可用在任意模板中，但webpack会打包进去，无论用没用
+        <script>
+            // install.js  插件用来注册组件
+            import Icon from './Icon.vue'
+            const install = {
+                install: function(Vue) {
+                    Vue.component('VIcon', Icon);
+                }
+            };
+            export default install;
+
+            // main.js
+            import install from './install.js';
+            Vue.use(install); // 利用install插件注册Icon组件
+            //可以不用插件注册组件 直接在 main.js中注册
+            import Icon from './Icon.vue'
+            Vue.component('Icon', Icon)
+            <icon></icon> // 所有组件都可用 必须小写
+        </script>
+
+    局部注册：
+        需要的模板中注册
+        <script>
+            import VIcon from './Icon.vue';
+            export default{
+                component: {
+                    VIcon
+                }
+            }
+
+            <v-icon></v-icon>
+        </script>
+
+    页面组件：我们使用 Vue 时，每个路由代表的页面，都可以称之为组件。
+    基础组件：就像上面栗子中的 Icon 组件，就是一个典型的基础组件。基本上不掺杂业务逻辑，在项目中可能被大量使用，
+             易于移植。类似的基础组件还有 Button、Input 等，常见于各类 UI 组件库。
+    业务组件：业务组件和项目具体的业务逻辑有大量耦合，一般抽离于当前项目。
+    
+    组件通信：
+        
+        1. Props
+            父组件传值给子组件
+            <script>
+                Vue.component('blog-post', {
+                // 在 JavaScript 中是 camelCase 的
+                props: ['postTitle'],
+                template: '<h3>{{ postTitle }}</h3>'
+                })
+            </script>
+
+            <!-- 在 HTML 中是 kebab-case 的 -->
+            <blog-post post-title="hello!"></blog-post>
+
+            给 prop 传入一个静态的值：
+            <blog-post title="My journey with Vue"></blog-post>
+
+            通过 v-bind 动态赋值：
+            <!-- 动态赋予一个变量的值 -->
+            <blog-post v-bind:title="post.title"></blog-post>
+
+            <!-- 动态赋予一个复杂表达式的值 `v-bind` 来告诉 Vue这是一个 JavaScript 表达式而不是一个字符串-->
+            <blog-post
+            v-bind:title="post.title + ' by ' + post.author.name"
+            ></blog-post>
+            
+            所有的 prop 都使得其父子 prop 之间形成了一个单向下行绑定：父级 prop 的更新会向下流动到子组件中，
+            但是反过来则不行。这样会防止从子组件意外改变父级组件的状态，从而导致你的应用的数据流向难以理解。
+            每次父级组件发生更新时，子组件中所有的 prop 都将会刷新为最新的值。
+
+            两种常见的试图改变一个 prop 的情形：
+                这个 prop 用来传递一个初始值；这个子组件接下来希望将其作为一个本地的 prop 数据来使用。在这种情况下，
+                最好定义一个本地的 data 属性并将这个 prop 用作其初始值：
+                props: ['initialCounter'],
+                data: function () {
+                    return {
+                        counter: this.initialCounter
+                    }
+                }
+                这个 prop 以一种原始的值传入且需要进行转换。在这种情况下，最好使用这个 prop 的值来定义一个计算属性：
+                props: ['size'],
+                computed: {
+                    normalizedSize: function () {
+                        return this.size.trim().toLowerCase()
+                    }
+                }
+
+            <JavaScript 中对象和数组是通过引用传入的，所以对于一个数组或对象类型的 prop 来说，在子组件中改变这个对象或数组本身将会影响到父组件的状态。>
+            
+            验证Props
+            <script>
+                Vue.component('my-component', {
+                    props: {
+                        // 基础的类型检查 (`null` 和 `undefined` 会通过任何类型验证)
+                        propA: Number,
+                        // 多个可能的类型
+                        propB: [String, Number],
+                        // 必填的字符串
+                        propC: {
+                            type: String,
+                            required: true
+                        },
+                        // 带有默认值的数字
+                        propD: {
+                            type: Number,
+                            default: 100
+                        },
+                        // 带有默认值的对象
+                        propE: {
+                            type: Object,
+                            // 对象或数组默认值必须从一个工厂函数获取
+                            default: function () {
+                                return { message: 'hello' }
+                            }
+                        },
+                        // 自定义验证函数
+                        propF: {
+                            validator: function (value) {
+                                // 这个值必须匹配下列字符串中的一个
+                                return ['success', 'warning', 'danger'].indexOf(value) !== -1
+                            }
+                        }
+                    }
+                })
+            </script>
+            
+            <script>
+                // commuication.vue
+                <commuication-sub v-bind="dataProps"></commuication-sub>
+                // v-bind="dataProps" 等同于 :title="title", 适用于多个参数一起传递
+                ...
+                data() {
+                    return {
+                        dataProps: {
+                            title: '父组件的值',
+                        }
+                    }
+                }
+
+                // commuication-sub.vue
+                <div class="commuication-sub">
+                    {{title}}
+                </div>
+                ...
+                props: ['title']
+                //推荐开启类型检查
+                props: {
+                    title: {
+                        type: String,
+                        required: true,
+                        default: '' //允许默认值
+                    } 
+                }
+            </script>
+
+             Vue 推荐需要改动的时候，通过改变父组件的值从而触发 Props 的响应。或者,在接收非引用类型的值时，使用子组件自身的 data 做一次接收。
+
+             // commuication-sub.vue
+             <div class="commuication-sub">
+                 {{text}}
+             </div>
+             ...
+            <script>
+                props: {
+                    title: {
+                        type: String,
+                        required: true,
+                        default: '' //允许默认值
+                    } 
+                },
+                data: function() {
+                    return {
+                        text: this.title
+                    };
+                }
+            </script>
+
+            javascript中，应用类型的赋值，是内存地址的传递，所以需要深拷贝
+            
+            <script>
+                let obj = JSON.parse(JSON.stringify(obj)); // 函数、undefined、循环引用无法序列化
+            </script>
+            
+            在组件上绑定的属性，如果没有在组件内部用 Props 声明，会默认绑定到子组件中的html根元素上去。inheritAttrs: false 可以取消继承关系
+
+                // commuication.vue
+                <communication-sub v-bind="dataProps" class="one" type="div"></communication-sub>
+            结果：
+                // 页面中生成的子组件标签。 因为sub只有一个div，所以这里type="div"属性没有在sub中的 Props 里声明，其实是绑定在sub根元素上的
+                <div data-v-449162b3 class="commuication-sub one" type="div">父组件的值</div>  
+                
+            class和style合并，其他属性会替换根元素上的属性值。并且 inheritAttrs不会影响 class和style 的绑定，下面开启 inheritAttrs：
+
+                // commuication-sub.vue
+                <div class="commuication-sub">
+                    {{text}}
+                </div>
+                ...
+                <script>
+                        inheritAttrs: false,
+                        props: {
+                            title: {
+                                type: String,
+                                required: true,
+                                default: '' //允许默认值
+                            } 
+                        },
+                        data: function() {
+                            return {
+                                text: this.title
+                            };
+                        }
+                    </script>
+
+                // commuication.vue
+                <communication-sub v-bind="dataProps" class="one" type="div"></communication-sub>
+            结果：
+                // 页面中生成的子组件标签。由于开启了inheritAttrs，而且 sub中的Props没有声明type，所以type="div"属性消失了
+                <div data-v-449162b3 class="commuication-sub one">父组件的值</div>
+
+            开启 inheritAttrs， 但在子组件 Props 里声明 type：
+                
+                // commuication-sub.vue
+                <div class="commuication-sub" :type="typ">
+                    {{text}}
+                </div>
+                ...
+                <script>
+                        inheritAttrs: false,
+                        props: {
+                            title: {
+                                type: String,
+                                required: true,
+                                default: '' //允许默认值
+                            },
+                            type: {
+                                type: String,
+                                required: true,
+                                default: '' //允许默认值
+                            }
+                        },
+                        data: function() {
+                            return {
+                                text: this.title,
+                                typ: this.type  // 将从父组件拿到的 type值绑定到子组件 位置
+                            };
+                        }
+                    </script>
+
+                // commuication.vue
+                <communication-sub v-bind="dataProps" class="one" type="div"></communication-sub>
+            结果：
+                // 页面中生成的子组件标签。这次type="div"属性并不是绑在sub跟元素上，而是我们具体指定的元素上（不过这里指定的div其实就是根元素 =。=，因为sub里就一个div）
+                <div data-v-449162b3 class="commuication-sub one">父组件的值</div>
+
+        2. attrs、listeners
+            
+                在开启inheritAttrs后，如果要绑定属性到子组件 指定 元素上，就会很麻烦：
+                在子组件 Props 中声明 然后data中再赋值到 指定 位置
+                而$attrs可以解决
+
+                // communication.vue
+                <template>
+                    <div class="communication">
+                        <communication-sub v-bind="dataProps" class="input" type="text" placeholder="请输入内容">
+                        </communication-sub>
+                    </div>
+                </template>
+                <script>
+                import communicationSub from './communication-sub.vue';
+                export default{
+                    name: 'communication',
+                    data() {
+                        return {
+                            dataProps: {
+                                title: '我是 communication 的值',
+                            }
+                        }
+                    },
+                    components: {
+                        communicationSub
+                    }
+                }
+                </script>
+
+                // communication-sub.vue
+                ···
+                <div class="communication-sub">
+                    <input v-bind="$attrs" v-model="title"></input>
+                </div>
+                ···
+                export default {
+                    inheritAttrs: false
+                }
+            
+            结果：
+                // 虽然子组件中开启 inheriAttrs，但type属性依旧成功绑定到 input 元素上，而没有绑到根元素div上，同时不再需要 Props声明 data赋值
+                <div class="commuication-sub input">
+                    <input type="text" placeholder="请输入内容" title="我是 communication 的值">
+                </div>
+                // class 和 style 属性不受 inheritAttrs 影响，所以依然可以绑在 div上
+                // $attrs 则是将没有被组件内部 Props 声明的传值（也叫非 Props 特性）收集起来的一个对象，再通过 v-bind 将其绑定在指定元素上。
+                // 这里为 type placeholder title 指定的元素是 sub中 input ，所以最后绑在 input上
+            
+            $attrs 可以将非Props属性绑定到 指定 元素上，但是不会与该元素原有属性发生合并或替换，而以原有属性为准
+
+            假如将上述 input 的 type 默认设置为 password。
+                <input v-bind="$attrs" v-model="title" type="password"></input>
+            则不会采用 $attrs 中的 type: 'text'，将以 password 为准，所以如果需要默认值的属性，建议不要用这种方式。
+
+        3. 
+        4. 
+        5. 
+
 <Q&A 261> 
 <Q&A 262> 
 <Q&A 263> 
