@@ -349,7 +349,7 @@
             必须要有一个对象，可以作为另一个对象的基础。
             与原型模式一样，没有解决 子实例共享引用类型的属性 问题
             
-    5.寄生式继承
+    5.寄生式继承（原型式+增强语句）
         function object(obj) {
             function F() {} // 临时的构造函数
             F.prototype = obj;
@@ -372,7 +372,7 @@
 
         缺点： 不能复用函数，与构造函数模式类似。
 
-    6.寄生组合继承 （最佳方式）
+    6.寄生组合继承 （寄生式+组合式，最佳方式）
         function object(obj) {
             function F() {} // 临时的构造函数
             F.prototype = obj;
@@ -404,6 +404,21 @@
 
         优点：同组合继承。但解决了组合继承的缺点，只调用了一次父类构造函数，避免了在子类构造函数的原型上创建不必要的、多余的属性。
         缺点：理论上没有。
+
+        寄生组合式继承本质：
+                继承的本质目的是让子类可以获得父类的方法和属性，其中方法存在父类原型super.prototype里，属性存在父类构造函数super.constructor中
+                组合式继承是通过：
+                        sub.prototype = new super() 来使子类获取父类原型中的方法，但此时，父类实例从其构造函数中获取的属性也会复制一份到子类的原型中，（这份属性是多余的，会被之后获取的覆盖掉，不会传到子类构造和实例中）
+                        在sub.constructor里调用父类构造函数super.call(this)，使子类构造函数创建的子类实例都获得一份父类构造函数super.constructor里的属性，（会覆盖之前子类原型获得属性）
+                
+                寄生组合式就是为了避免多余的属性赋值，利用寄生式改写组合式里获取父类原型方法的方式，利用父类原型的克隆副本替换子类原型，让子类实例可以获取父类原型中的方法，又不会从父类实例中多赋值一份父类构造函数的属性
+                利用寄生式原理，先克隆一份父类原型的副本 prototype = object（super.prototype），可以增加增强语句，并改写构造函数指向prototype.constructor = sub.constructor，然后替换子类原型，sub.prototype = prototype
+                第二部分依旧在子类构造函数里调用父类构造函数 super.call(this)，以便让子类实例获得父类构造函数里的属性。
+
+        寄生组合式 优点：
+                通过父类原型副本替换子类原型，使子类实例可以继承父类原型中的方法。（没有多余属性赋值，克隆父类原型时可以进行增强：即为子类原型添加新共有方法）
+                通过子类构造中调用父类构造，使子类实例可以继承父类构造中的属性。（子类构造中，在调用super.call(this)也可以进行增强：即为子类实例添加新共有属性）
+
 
     7.es6继承
         class Animals {
@@ -1901,6 +1916,7 @@
     3.tcp是面向字节流的；udp是面向报文的，网络出现拥塞不会降低发送速率
     4.tcp只能1对1 udp可以1对多
     5.tcp首部字段20字节，udp首部字段8字节
+    6.TCP的应用：WEB浏览器，电子邮件，文件传输程序 ； UDP的应用：DNS，视频流，IP语音（VoIP）
 
 <Q&A 105> websocket实现和应用
     1.是什么
@@ -6488,6 +6504,8 @@
 
 <Q&A 260> vue 组件通信 全
 
+        https://juejin.im/post/5c776ee4f265da2da53edfad
+
     全局注册：
         可用在任意模板中，但webpack会打包进去，无论用没用
         <script>
@@ -6502,7 +6520,7 @@
 
             // main.js
             import install from './install.js';
-            Vue.use(install); // 利用install插件注册Icon组件
+            Vue.use(install); // 利用install插件注册Icon组件,install.js里就Vue.component()有用
             //可以不用插件注册组件 直接在 main.js中注册
             import Icon from './Icon.vue'
             Vue.component('Icon', Icon)
@@ -6615,8 +6633,8 @@
             </script>
             
             <script>
-                // commuication.vue
-                <commuication-sub v-bind="dataProps"></commuication-sub>
+                // communication.vue
+                <communication-sub v-bind="dataProps"></communication-sub>
                 // v-bind="dataProps" 等同于 :title="title", 适用于多个参数一起传递
                 ...
                 data() {
@@ -6627,8 +6645,8 @@
                     }
                 }
 
-                // commuication-sub.vue
-                <div class="commuication-sub">
+                // communication-sub.vue
+                <div class="communication-sub">
                     {{title}}
                 </div>
                 ...
@@ -6645,8 +6663,8 @@
 
              Vue 推荐需要改动的时候，通过改变父组件的值从而触发 Props 的响应。或者,在接收非引用类型的值时，使用子组件自身的 data 做一次接收。
 
-             // commuication-sub.vue
-             <div class="commuication-sub">
+             // communication-sub.vue
+             <div class="communication-sub">
                  {{text}}
              </div>
              ...
@@ -6673,45 +6691,45 @@
             
             在组件上绑定的属性，如果没有在组件内部用 Props 声明，会默认绑定到子组件中的html根元素上去。inheritAttrs: false 可以取消继承关系
 
-                // commuication.vue
+                // communication.vue
                 <communication-sub v-bind="dataProps" class="one" type="div"></communication-sub>
             结果：
                 // 页面中生成的子组件标签。 因为sub只有一个div，所以这里type="div"属性没有在sub中的 Props 里声明，其实是绑定在sub根元素上的
-                <div data-v-449162b3 class="commuication-sub one" type="div">父组件的值</div>  
+                <div data-v-449162b3 class="communication-sub one" type="div">父组件的值</div>  
                 
             class和style合并，其他属性会替换根元素上的属性值。并且 inheritAttrs不会影响 class和style 的绑定，下面开启 inheritAttrs：
 
-                // commuication-sub.vue
-                <div class="commuication-sub">
+                // communication-sub.vue
+                <div class="communication-sub">
                     {{text}}
                 </div>
                 ...
                 <script>
-                        inheritAttrs: false,
-                        props: {
-                            title: {
-                                type: String,
-                                required: true,
-                                default: '' //允许默认值
-                            } 
-                        },
-                        data: function() {
-                            return {
-                                text: this.title
-                            };
-                        }
-                    </script>
+                    inheritAttrs: false,
+                    props: {
+                        title: {
+                            type: String,
+                            required: true,
+                            default: '' //允许默认值
+                        } 
+                    },
+                    data: function() {
+                        return {
+                            text: this.title
+                        };
+                    }
+                </script>
 
-                // commuication.vue
+                // communication.vue
                 <communication-sub v-bind="dataProps" class="one" type="div"></communication-sub>
             结果：
                 // 页面中生成的子组件标签。由于开启了inheritAttrs，而且 sub中的Props没有声明type，所以type="div"属性消失了
-                <div data-v-449162b3 class="commuication-sub one">父组件的值</div>
+                <div data-v-449162b3 class="communication-sub one">父组件的值</div>
 
             开启 inheritAttrs， 但在子组件 Props 里声明 type：
                 
-                // commuication-sub.vue
-                <div class="commuication-sub" :type="typ">
+                // communication-sub.vue
+                <div class="communication-sub" :type="typ">
                     {{text}}
                 </div>
                 ...
@@ -6737,11 +6755,11 @@
                         }
                     </script>
 
-                // commuication.vue
+                // communication.vue
                 <communication-sub v-bind="dataProps" class="one" type="div"></communication-sub>
             结果：
                 // 页面中生成的子组件标签。这次type="div"属性并不是绑在sub跟元素上，而是我们具体指定的元素上（不过这里指定的div其实就是根元素 =。=，因为sub里就一个div）
-                <div data-v-449162b3 class="commuication-sub one">父组件的值</div>
+                <div data-v-449162b3 class="communication-sub one">父组件的值</div>
 
         2. attrs、listeners
             
@@ -6776,7 +6794,7 @@
                 // communication-sub.vue
                 ···
                 <div class="communication-sub">
-                    <input v-bind="$attrs" v-model="title"></input>
+                    <input v-bind="$attrs" v-model="title"></input> // $attrs等于dataProps，获取具体属性 $attrs.title
                 </div>
                 ···
                 export default {
@@ -6785,7 +6803,7 @@
             
             结果：
                 // 虽然子组件中开启 inheriAttrs，但type属性依旧成功绑定到 input 元素上，而没有绑到根元素div上，同时不再需要 Props声明 data赋值
-                <div class="commuication-sub input">
+                <div class="communication-sub input">
                     <input type="text" placeholder="请输入内容" title="我是 communication 的值">
                 </div>
                 // class 和 style 属性不受 inheritAttrs 影响，所以依然可以绑在 div上
@@ -6798,40 +6816,751 @@
                 <input v-bind="$attrs" v-model="title" type="password"></input>
             则不会采用 $attrs 中的 type: 'text'，将以 password 为准，所以如果需要默认值的属性，建议不要用这种方式。
 
-        3. 
-        4. 
-        5. 
+            $listeners同 $attrs 类似，可以看做是一个包含了组件上所有事件监听器（包括自定义事件、不包括.native修饰的事件）的对象。它也支持上述的写法，适用于将事件安放于组件内指定元素上。
+             通过$listeners将聚焦事件绑定给input
+                // communication.vue
+                <communication-sub v-bind="dataProps" class="input" type="text" placeholder="请输入" @focus="onFocus"></communication-sub>
+                <script>
+                    ...
+                    methods: {
+                        onFocus() {
+                            console.log('onFocus');
+                        }
+                    }
+                </script>
 
-<Q&A 261> 
-<Q&A 262> 
-<Q&A 263> 
-<Q&A 264> 
-<Q&A 265> 
-<Q&A 266> 
-<Q&A 267> 
+                // communication-sub.vue
+                <input v-bind="$attrs" v-model="title" v-on="$listeners"></input>
+            
+            其他应用：
+                创建更高层次组件，如祖孙组件中传递数据，在孙子组件中触发事件后在祖辈中作相应更新
+
+                // communication.vue
+                <template>
+                        <div class="communication">
+                            ------------------------------------.------------------------------------
+                            <p>me, commuication</p>
+                            <input type="text" :placeholder="dataProps.title" v-model="dataProps.title">
+                            <communication-sub 
+                                v-bind="dataProps" 
+                                @click="onCommunicationClick">
+                            </communication-sub>
+                            ------------------------------------.------------------------------------
+                        </div>
+                    </template>
+                    <script>
+                    import communicationSub from './communication-sub.vue'
+                    export default {
+                        name: "communication",
+                        data() {
+                            return {
+                                dataProps: {
+                                    title: "value/communication"
+                                }
+                            }
+                        },
+                        components: {
+                            communicationSub
+                        },
+                        methods: {
+                            onCommunicationClick() {
+                                this.dataProps.title='me, vaule after click'
+                            }
+                        }
+                    }
+                    </script>
+                    
+                // communication-sub.vue
+                <template>
+                        <div class="communication-sub">
+                            ------------------------------------..------------------------------------
+                            <p>me, commuication-sub</p>
+                            <input v-bind:placeholder="$attrs.title" />
+                            <communication-min-sub v-on="$listeners"></communication-min-sub>
+                            ------------------------------------..------------------------------------
+                        </div>    
+                    </template>
+                    
+                    <script>
+                    import CommunicationMinSub from './communication-min-sub'
+                    export default {
+                        name: "communication-sub",
+                        inheritAttrs: false,
+                        components: {
+                            CommunicationMinSub
+                        }
+                    }
+                    </script>
+                    
+                    
+                // communication-min-sub.vue
+                <template>
+                        <div class="commuication-min-sub">
+                            ------------------------------------...------------------------------------
+                            <p>me, commuication-min-sub</p>
+                            <button v-on="$listeners">click</button>
+                            <br>
+                            ------------------------------------...------------------------------------
+                        </div>
+                    </template>
+                    <script>
+                    export default {
+                        name: "commuication-min-sub",
+                        inheritAttrs: false
+                    }
+                    </script>
+                    
+                祖组件input的值和dataProps通过v-model绑定，dataProps并通过$attrs.title传递到父组件的input上，并且不需要 props和data()    
+                孙子组件通过$listeners将click的事件绑定到父组件在祖组件中使用的标签上@click="onCommunicationClick"，并调用祖组件中定义的方法
+                父组件也可以在自己的Vue里的input上设置v-on="$listeners"，绑定到自己的标签上的处理函数，然后在祖组件中定义该处理函数
+                但父和孙的$listeners 调用会相互触发，(可能因为都绑在父组件标签上)
+
+
+            $attrs实质就是：
+                        $attrs 就是将没有被组件内部 Props 声明的传值（也叫非 Props 特性）收集起来的一个对象
+                        通过 $attrs将父组件vue里子孙标签 v-bind绑定的父组件数据dataProps 传到到 指定 的子孙组件上，标签上新增的属性也会传递，就属性以原值为准
+                        从而达到父组件向 指定 子孙组件传值的效果
+                        （形式就是在父组件data()中定义需要传给子孙组件的数据,同时在导入的子孙标签上绑定数据 v-bind="dataProps"。指定的子孙组件通过 v-bind="$attrs" 接受传来的值）
+
+            $listeners实质就是：
+                        $listeners就是包含了父组件上所有事件监听器（包括自定义事件、不包括.native修饰的事件）的对象。
+                        通过 $listeners 将父组件的事件监听器安放到 指定 的子孙组件上，通过子孙组件的事件触发父组件中的处理函数，修改父组件流向子孙组件的数据，
+                        从而达到 指定 子孙组件 ‘向父组件传信息并反馈自身’ 的效果
+                        （形式就是在父组件导入的子孙标签上设置事件监听器 @click="onClick"，同时定义处理函数。指定的子孙组件中通过 v-on="$listeners" 接受传来的监听器）
+
+        3. 依赖注入provide、inject
+            可以允许一个祖先组件向其所有子孙后代注入一个依赖，不论组件层次有多深，并在起上下游关系成立的时间里始终生效。--- Vue 文档
+            Vue 本身并不推荐直接在业务中使用 provide、inject，一般在组件、插件库用到的比较多。
+
+            // communication.vue
+            <template>
+                <div class="communication">
+                    <p>me, commuication</p>
+                    <input type="text" :placeholder="dataProps.title" v-model="dataProps.title">
+                    <br><br>
+                    <communication-sub 
+                        v-bind="dataProps">
+                    </communication-sub>
+                    <br>
+                </div>
+            </template>
+            <script>
+            import communicationSub from './communication-sub.vue'
+            export default {
+                name: "communication",
+                data() {
+                    return {
+                        dataProps: {
+                            title: ""
+                        }
+                    }
+                },
+                components: {
+                    communicationSub
+                },
+                // 在 provide 添加子代需要接收的方法 onCommunicationClick，
+                // 也可以直接指定为 this，子代便能访问父代所有的数据和方法。
+                provide: function () { 
+                    return {
+                        onCommunicationClick: this.onCommunicationClick
+                    }
+                },
+                methods: {
+                    onCommunicationClick() {
+                        this.dataProps.title = 'me, vaule after click'
+                    }
+                }
+            }
+            </script>
+            <style>
+            div.communication {
+                border: 1px solid black
+            }
+            </style>
+
+            // communication-sub.vue
+            <template>
+                <div class="communication-sub">
+                    <p>me, commuication-sub</p>
+                    <input v-bind:placeholder="title"/>
+                    <br>{{text}}<br>
+                    <communication-min-sub></communication-min-sub>
+                    <br>
+                </div>    
+            </template>
+            
+            <script>
+            import CommunicationMinSub from './communication-min-sub'
+            export default {
+                name: "communication-sub",
+                props: {
+                    title: {
+                        type: String,
+                        required: true
+                    }
+                },
+                data: function() {
+                    return {
+                        text: this.title
+                    }
+                },
+                components: {
+                    CommunicationMinSub
+                }
+            }
+            </script>
+            
+            <style>
+            div.communication-sub {
+                border: 1px solid black
+            }
+            </style>
+
+            // communication-min-sub.vue
+            <template>
+                <div class="communication-min-sub">
+                    <p>me, communication-min-sub</p>
+                    <button @click="onCommunicationClick">click</button>
+                    <br>
+                </div>
+            </template>
+            <script>
+            export default {
+                name: "communication-min-sub",
+                inject: ['onCommunicationClick'] // inject接受祖组件方法
+            }
+            </script>
+            
+            <style>
+            div.communication-min-sub {
+                border: 1px solid black
+            }
+            </style>
+
+        4. ref、parent、children
+            父组件访问子组件
+            · ref
+                获取元素的DOM对象和子组件实例，DOM加载后
+                普通DOM元素上，引用指向的就是DOM元素
+                子组件上，引用指向组件实例
+                <input type="text" v-model="dataProps.title" ref="input">
+                ...
+                mounted() {
+                    this.$nextTick(_ => { // 确保 Dom 更新完成
+                        this.$refs['input'].style.color = 'red';
+                    });
+                }
+                // 这里只是举一个栗子，实际项目中的需求，最好通过 class 的方式，尽量减少 Dom 操作。
+
+                父元素状态改变，需要子组件进行http请求更新，通常
+                通过Props将状态传递给子组件
+                子组件进行watch检测，如变更，进行操作。
+                这种时候可以使用ref
+                <child ref="child"></child>
+                ...
+                <script>
+                    export default {
+                        methods () {
+                            onStateChange() { // 变更状态后直接调用子组件方法进行更新
+                                this.$refs['child'].updateData();
+                            }
+                        }
+                    }
+                </script>
+
+            · $children、$parent
+                分别指向当前组件的父子组件
+                <script>
+                    export default {
+                        methods () {
+                            onStateChange() { // 子组件返回的是一个数组，多个子组件用 $options.name 区分。
+                                this.$children[0].updateData();
+                            }
+                        }
+                    }
+                </script>
+                ref、parent、children 它们几个的一个缺点就是无法处理跨级组件和兄弟组件
+
+        5. emit、on、off
+            $emit 和 $on都是组件自身的方法，$on 可以监听 $emit 派发的事件，$off 则用来取消事件监听。
+            // 父组件
+            <template>
+                <button-component @clickbutton="clickButton"></button-component>
+                // 在父组件利用 v-on监听
+            </template>
+            <script>
+                export default {
+                    methods: {
+                        clickButton () {...}
+                    }
+                }
+            </script>
+
+            // 子组件
+            <template>
+                <button @click="handleClick"></button>
+            </template>
+            <script>
+                export default {
+                    methods: {
+                        handleClick() {
+                            this.$emit('clickButton'); // 触发emit，调用父组件中的方法
+                        }
+                    },
+                    mounted() {
+                        this.$on('clickButton',(...arr) => {
+                            console.log(...arr);
+                        })
+                    }
+                }
+            </script>
+        6. EventBus
+            支持跨级和兄弟组件
+            使用vue实例做全局的事件通信(中央事件总线)
+
+            正常的bus会挂在到vue的prototype，方便全局调用
+            //main.js
+            Vue.prototype.$bus = new Vue()
+            //组件中
+            this.$bus.$emit()
+
+            或者 将eventBus挂在vue data上
+            //main.js
+            new Vue({
+                data: {
+                    eventBus: new Vue()
+                },
+                router: router.routers,
+                components: { App },
+                render: rout => rout(App)
+              }).$mount('#app');
+            //组件中
+            this.$root.eventBus.$emit()
+
+            //communication.vue
+            <template>
+                <div class="communication">
+                    <p>me, commuication</p>
+                    <input type="text" :placeholder="dataProps.title" v-model="dataProps.title">
+                    <br><br>
+                    <communication-sub 
+                        v-bind="dataProps">
+                    </communication-sub>
+                    <br>
+                </div>
+            </template>
+            <script>
+            import communicationSub from './communication-sub.vue'
+            export default {
+                name: "communication",
+                created() { // 监听子组件触发的不bus事件
+                    this.$bus.$on('busClick',(data) => {
+                        this.dataProps.title = data;
+                    });
+                },
+                beforeDestroy() { // 实例销毁时卸载监听事件  对于单页面，卸载很重要
+                    this.$bus.$off('busClick');
+                },
+                data() {
+                    return {
+                        dataProps: {
+                            title: ""
+                        }
+                    }
+                },
+                components: {
+                    communicationSub
+                }
+            }
+            </script>
+
+            //communication-min-sub.vue
+            <template>
+                <div class="communication-min-sub">
+                    <p>me, communication-min-sub</p>
+                    <button @click="busClick">click bus</button>
+                    <br>
+                </div>
+            </template>
+            <script>
+            export default {
+                name: "communication-min-sub",
+                methods: {
+                    busClick() {
+                        this.$bus.$emit('busClick', 'bus触发了');
+                    }
+                }
+            }
+            </script>
+
+            需要在许多页面都做 $on 监听的操作。将这些操作整合到一起：
+            // 新建一个 eventBus.js
+            import Vue from 'vue';
+            const bus = new Vue({
+                data () {
+                    return {
+                        userInfo: {}
+                    }
+                },
+                created () {
+                    this.$on('getUserInfo', val => {
+                        this.userInfo = val;
+                    })
+                }
+            });
+            export default bus;
+
+            // main.js
+            import bus from './eventBus';
+            Vue.prototype.$bus = bus;
+
+            // app.vue
+            methods: {
+                getUserInfo() {
+                    ajax.post(***).then(data => {
+                        this.$bus.$emit('getUserInfo', data); // 通知 EventBus 更新 userInfo
+                    })
+                }
+            }
+            其他页面用到 userInfo 的时候，只需要 this.$bus.userInfo 就可以了。注意刚刚其实没有用 off 卸载掉监听，
+            因为其实 userInfo 这种全局信息，并没有一个准确的说要销毁的时机，浏览器关闭的时候，也用不着我们处理了。
+
+        7. dispatch、broadcast
+            1.0 
+            2.0 废弃
+            $dispatch 向上级组件派发事件
+            $broadcast 向下级广播
+
+        8. Vuex
+            Vuex 是一个专为 Vue.js 应用程序开发的状态管理模式。它采用集中式存储管理应用的所有组件的状态，
+            并以相应的规则保证状态以一种可预测的方式发生变化。--- 官方文档
+
+            Vuex 的核心是单向数据流，并以相应规则保证所有的状态管理都可追踪、可预测。
+            如果你的项目比较小，状态管理比较简单，完全没有必要使用 Vuex
+
+        总结：
+            子组件触达父组件的方式：Props、$parent、$attrs、$listeners、provide 和 inject、$dispatch
+            父组件触达子组件的方式：$emit 和 $on、$children、$ref、broadcast
+            全局通信：EventBus、Vuex
+        
+
+
+<Q&A 261> OSI七层模型 
+
+    应用层：应用程序与接口（如qq和其他三方软件的对接——对应设备（计算机）
+         协议：http dns  telnet   nfs ftp文件传输协议 tftp小型文件传输协议   smtp简单邮件传输协议（25）  snmp简单网络管理协议（161）      
+    
+    表示层：表示数据的格式、压缩、加密
+    
+    会话层：作用：建立、维护、管理应用程序之间的会话。
+    
+         功能：对话控制、同步
+    
+    传输层：作用：负责建立端到端的连接、保证报文在端到端之间的传输。——对应设备（防火墙）
+    
+         功能：服务点编址，分段与重组、连接控制、流量控制、差错控制。
+    
+        协议：TCP   UDP
+    
+    网络层：作用：负责将分组数据从源端传输到目的端——对应设备（路由器）
+    
+         网络层功能：为网络设备提供逻辑地址，进行路由选择、分组转发
+    
+         IP地址=网络位+主机位
+    
+         IP地址是三层地址
+    
+         协议：IP  ARP  RARP逆地址解析协议  ICMP（Internet控制报文协议） IGMP网路群组管理协议
+    
+    数据链路层：作用：在局域网内部实现主机与主机之间的通讯——对应设备（交换机）
+    
+            协议：PPP  FDDI
+    
+    
+    物理层：作用：负责把逐个的比特从一跳（结点）移动到另一跳（结点）。——（网卡）
+    
+         功能：1）定义接口和媒体的物理特性
+    
+           2）定义比特的表示、数据传输速率、信号的传输模式（单工、半双工、全双工）
+    
+             3）定时网络物理拓扑（网状、星型、环形、总线型、等拓扑）
+
+<Q&A 262> git 版本控制原理
+
+        git属于分布式版本控制系统，DVCS
+        
+        客户端并不只提取最新版本的文件快照，而是把原始的代码仓库完整地镜像下来。
+
+        git和其他版本控制不同：git之关心文件数的整体是否变化，而其他系统关心文件内容的差异，git不保存这些更新的差异数据，而是把变化的文件快照后，保存在一个微型文件系统中
+        
+        git原理：git会浏览文件的指纹信息，并做快照，保存指向快照的索引。若没变化，则保存上次快照的链接
+
+        Git 内都只有三种状态：已提交（committed），已修改（modified）和已暂存（staged）。
+
+                已提交表示该文件已经被安全地保存在本地数据库 中了；
+                已修改表示修改了某个文件，但还没有提交保存；
+                已暂存表示把已修改的文件放在下次提交时要保存的清单中。 
+
+<Q&A 263> SSR 和 预渲染
+
+    预渲染是在 项目打包是，告诉打包工具 哪些url下的页面或组件需要提前生成 HTML 结构，在客户端请求时，直接返回该HTML
+
+    预渲染在构建时(build time)就简单地生成针对特定路由的静态 HTML 文件，因此当用户访问这些路由时，服务器端会返回已渲染好的HTML文件。
+    prerender-spa-plugin原理
+    <script>
+        new PrerenderSPAlugin({
+            staticDir: path.join(__dirname, 'dist'),
+            routes: [ '/', 'about' ],
+
+            renderer: new Renderer({
+                headless: false,
+                renderAfterDocumentEvent: 'render-event'
+            })
+        })
+    </script>
+    在构建阶段的最后，在本地先创建一个Server，它用来处理访问页面的请求，然后启动一个 Puppeteer 的服务，访问配置了预渲染的路由，Server返回对应的页面，
+    然后 Puppeteer 抓取页面进行渲染，最后生成静态的HTML文件输出到路由对应目录中。
+
+    SSR 服务端渲染是
+                客户端 --- nodejs --- 服务端
+                是将客户端浏览器要做的vue生命周期的前几步渲染工作放到nodejs上来做，nodejs生成简单HTML结构，同时将从服务端请求得到的数据一起返回给客户端浏览器
+                浏览器不再需要进行 生命周期 中前几步 HTML的渲染工作，直接将nodejs渲染好的html放上去就可
+                加快了 首屏呈现 速度，同时优化了 SEO 效果。
+                SEO： 爬虫在爬取网页信息，建立索引时，主要时识别网页中的html结构，由于单页面在进行页面加载时，需要从头开始生成html，这样速度较慢，爬虫爬的时候页面的body还是空白，不利于SEO
+
+<Q&A 264> 前端页面优化
+
+        · 资源压缩合并，合并图片，css、js文件压缩
+        · 利用浏览器缓存，分为强缓存和协商缓存
+
+        1. 强缓存不用请求服务器，直接使用本地的缓存。强缓存是利用 http 响应头中的Expires（绝对时间）或Cache-Control（服务器返回的相对时间，每次都会更新）实现的。
+        2. 协商缓存：浏览器发现本地有资源的副本，但是不太确定要不要使用，于是去问问服务器。当浏览器对某个资源的请求没有命中强缓存（也就是说超出时间了），
+            就会发一个请求到服务器，验证协商缓存是否命中。有两对header分别为Last-Modified、If-Modified-Since和ETag、If-None-Match使用cdn，CDN服务，
+            其实就是把页面静态内容或静态化的动态内容缓存到不同地区很多台专门的缓存服务器上（如图片缓存服务器，静态HTML缓存服务器、文件缓存服务器等）， 
+            然后根据用户线路所在的地区通过CND服务商的智能DNS自动选择一个最近的缓存服务器让用户访问，如果静态缓存服务器中没有请求的内容，才向动态服务器发出请求，以此提高速度，
+            这种方案对页面静态内容效果非常好，所以Web设计中页面静态化是很有必要的。
+        
+         
+        · DNS预解析，通过 DNS 预解析来告诉浏览器未来我们可能从某个特定的 URL 获取资源，当浏览器真正使用到该域中的某个资源时就可以尽快地完成 DNS 解析。
+        · 关键渲染路径优化，延迟加载JavaScript（设置defer或async）、确保将任何非必需的 CSS 都标记为非关键资源（例如打印和其他媒体查询media=”print”）、
+          尽早在 HTML 文档内指定所有 CSS 资源，以便浏览器尽早发现<link>标记并尽早发出 CSS 请求、避免使用 CSS import
+
+<Q&A 265> vue+nginx, 为什么还要node？
+
+        在这里vue+Nginx 为什么还用 node 的原因并不只是什么历史原因。Nginx 作为反向服务器存在的情况是非常多的，而且大部分 Nginx 并不提供逻辑处理，
+        只做譬如负载均衡、流量控制、数据验证、静态服务器等功能，虽然他也可以作为逻辑服务器使用 Lua 去拓展他的模块，但是这对于大部分人来说，并不会这么去做，
+        大部分人的做法是 Nginx 挡在前面作为一个负载均衡服务器，后面的逻辑服务器使用自己擅长的语言去实现逻辑，譬如：php，python，go，甚至是 c++（fast cgi）
+
+        Vue 配合 node 大部分的原因是因为
+                1. 就目前而言，vue 对 node 的服务端渲染支持最好（反过来说就不准确了）。并不是说除了 node 以外就不能做服务端渲染了，只要你够强，
+                   你可以使用 go 把 vue 的 js 逻辑跑一遍，只要能够渲染出字符串，那你理论上来说用什么语言都是无所谓的。但是 Node 天生 js，所以 Node 最方便。
+                2. 某些 Vue 无法做到的事情，Node 可以做。没错，这部分不能做的事情就是服务器逻辑，包括，数据存储，数据缓存，用户登录鉴权等等等等..
+                3. 前后统一语言，都是 JavaScript
+
+        搞清概念：什么是 Vue + Nginx
+                Vue 只是一个 UI 层的框架，因此他打包出来的就是一套 UI 的静态文件：html + js-bundle。对于静态文件，其实 Node 也是可以处理的，
+                但是鉴于 node 一般用来作为逻辑服务器的存在，我们会把静态服务器放在 Nginx 这一层返回给用户，因为 Nginx 在静态文件处理上来说很专业，
+                自带的一些功能也非常多，譬如 Gzip 配置一下就可以了。
+
+                因此，这个层面来看，如果只是 Vue + Nginx 的话，你大概就能做出一个静态的页面，如果你想要动态的页面，可能需要一个逻辑服务器帮助你，
+                那么这个逻辑服务器就是 Nodejs （当然也可以是其他任何语言，python 、C\c++、java、go）
+        
+        Node 开创了什么历史？
+                1. 使得 JavaScript 变成了服务器语言
+                2. 更方便的写异步回调（注意是更方便，不是开创）
+
+<Q&A 266> 前端高并发性能优化
+
+        1. 利用缓存，精简请求
+        2. 合并压缩 （HTTP2.0 首部压缩、建立全双工异步通信、数据分成更小的二进制帧）
+        3. 静态资源上传cdn
+        4. 避免高频刷新页面获取数据 （小于5秒的都回304）
+        5. 设置响应头cache-control和last-modified
+
+<Q&A 267> iframe
+
+　　用iframe可以把一个HTML文档插入到父文档里，重要的是明白iframe是如何工作的并高效地使用它。
+
+    <iframe>的优点：
+        引入缓慢的第三方内容，比如标志和广告
+        安全沙箱
+        并行下载脚本
+    <iframe>的缺点：
+        代价高昂，即使是空白的iframe
+        阻塞页面加载
+        非语义
+
+<Q&A 268> 跨域分离组件
+
+　　分离组件可以最大化并行下载，但要确保只用不超过2-4个域，因为存在DNS查找的代价。例如，可以把HTML和动态内容部署在www.example.org，
+    而把静态组件分离到static1.example.org和static2.example.org。
+    
+
+<Q&A 269> 把组件放在不含cookie的域下
+
+　　当浏览器发送对静态图像的请求时，cookie也会一起发送，而服务器根本不需要这些cookie。所以它们只会造成没有意义的网络通信量，
+    应该确保对静态组件的请求不含cookie。可以创建一个子域，把所有的静态组件都部署在那儿。
+
+　　如果域名是www.example.org，可以把静态组件部署到static.example.org。然而，如果已经在顶级域example.org或者www.example.org设置了cookie，
+    那么所有对static.example.org的请求都会含有这些cookie。这时候可以再买一个新域名，把所有的静态组件部署上去，并保持这个新域名不含cookie。Yahoo!用的是yimg.com，
+    YouTube是ytimg.com，Amazon是images-amazon.com等等。
+
+　　把静态组件部署在不含cookie的域下还有一个好处是有些代理可能会拒绝缓存带cookie的组件。有一点需要注意：如果不知道应该用example.org还是www.example.org作为主页，
+    可以考虑一下cookie的影响。省略www的话，就只能把cookie写到*.example.org，所以因为性能原因最好用www子域，并且把cookie写到这个子域下。
+
+<Q&A 270> 雅虎前端优化的35条军规
+
+    1.尽量减少HTTP请求数
+    2.减少DNS查找
+    3.避免重定向
+    4.让Ajax可缓存
+    5.延迟加载组件
+    6.预加载组件
+    7.减少DOM元素的数量
+    8.跨域分离组件
+    9.尽量少用iframe
+    10.杜绝404
+    11.避免使用CSS表达式
+    12.选择<link>舍弃@import
+    13.避免使用滤镜
+    14.把样式表放在顶部
+    15.去除重复脚本
+    16.尽量减少DOM访问
+    17.用智能的事件处理器
+    18.把脚本放在底部
+    19.把JavaScript和CSS放到外面
+    20.压缩JavaScript和CSS
+    21.优化图片
+    22.优化CSS Sprite
+    23.不要用HTML缩放图片
+    24.用小的可缓存的favicon.ico（P.S. 收藏夹图标）
+    25.给Cookie减肥
+    26.把组件放在不含cookie的域下
+    27.保证所有组件都小于25K
+    28.把组件打包到一个复合文档里
+    29.Gzip组件
+    30.避免图片src属性为空
+    31.配置ETags
+    32.对Ajax用GET请求
+    33.尽早清空缓冲区
+    34.使用CDN（内容分发网络）
+    35.添上Expires或者Cache-Control HTTP头
+
+<Q&A 271> html,css,js加载顺序
+
+    1.js放在head中会立即执行，阻塞后续的资源下载与执行。因为js有可能会修改dom，如果不阻塞后续的资源下载，dom的操作顺序不可控。
+
+　　正常的网页加载流程是这样的。
+        1. 浏览器一边下载HTML网页，一边开始解析
+        2. 解析过程中，发现<script>标签
+        3. 暂停解析，网页渲染的控制权转交给JavaScript引擎
+        4. 如果<script>标签引用了外部脚本，就下载该脚本，否则就直接执行
+        5. 执行完毕，控制权交还渲染引擎，恢复往下解析HTML网页
+
+　　如果外部脚本加载时间很长（比如一直无法完成下载），就会造成网页长时间失去响应，浏览器就会呈现“假死”状态，这被称为“阻塞效应”。
+    html需要等head中所有的js和css加载完成后才会开始绘制，但是html不需要等待放在body最后的js下载执行就会开始绘制,
+    因此将js放在body的最后面，可以避免资源阻塞，同时使静态的html页面迅速显示。将脚本文件都放在网页尾部加载，还有一个好处。
+    在DOM结构生成之前就调用DOM，JavaScript会报错，如果脚本都在网页尾部加载，就不存在这个问题，因为这时DOM肯定已经生成了。
+
+ 
+
+    2.js的执行依赖前面的样式。即只有前面的样式全部下载完成后才会执行js，但是此时外链css和外链js是并行下载的。
+
+　　 css需要分块，首页的css独立，其余的css需要动态加载，因为html的绘制会被css阻塞，这样可以减少首次进入时的白屏时间。
+
+ 
+
+    3.外链的js如果含有defer="true"属性，将会并行加载js，到页面全部加载完成后才会执行，会按顺序执行。
+
+　　    defer属性的作用是，告诉浏览器，等到DOM加载完成后，再执行指定脚本。
+
+        1. 浏览器开始解析HTML网页
+        2. 解析过程中，发现带有defer属性的script标签
+        3. 浏览器继续往下解析HTML网页，同时并行下载script标签中的外部脚本
+        4. 浏览器完成解析HTML网页，此时再执行下载的脚本
+　　
+        对于内置而不是连接外部脚本的script标签，以及动态生成的script标签，defer属性不起作用。
+
+    4.外链的js如果含有async="true"属性，将不会依赖于任何js和css的执行，此js下载完成后立刻执行，不保证按照书写的顺序执行。
+        因为async="true"属性会告诉浏览器，js不会修改dom和样式，故不必依赖其它的js和css。　
+
+　　    async属性的作用是，使用另一个进程下载脚本，下载时不会阻塞渲染。
+
+        1. 浏览器开始解析HTML网页
+        2. 解析过程中，发现带有async属性的script标签
+        3. 浏览器继续往下解析HTML网页，同时并行下载script标签中的外部脚本
+        4. 脚本下载完成，浏览器暂停解析HTML网页，开始执行下载的脚本
+        5. 脚本执行完毕，浏览器恢复解析HTML网页
+
+　　    async属性可以保证脚本下载的同时，浏览器继续渲染。需要注意的是，一旦采用这个属性，就无法保证脚本的执行顺序。哪个脚本先下载结束，
+        就先执行那个脚本。另外，使用async属性的脚本文件中，不应该使用document.write方法。
+
+　　 一般来说，如果脚本之间没有依赖关系，就使用async属性，如果脚本之间有依赖关系，就使用defer属性。如果同时使用async和defer属性，
+    后者不起作用，浏览器行为由async属性决定。
+
+<Q&A 272> CSS3 transform
+
+    CSStransform属性允许你旋转，缩放，倾斜或平移给定元素。这是通过修改CSS视觉格式化模型的坐标空间来实现的。
+
+    只能转换由盒子模型定位的元素。根据经验，如果元素具有display: block，则由盒模型定位元素。
+
+    transform属性可以指定为关键字值none 或一个或多个<transform-function>值。
+
+<Q&A 273> translate和position：relative的区别： 
+
+    相同点：
+        两者都是相对于本身移动位置 
+    区别： 
+        1、当元素原来已经有position:absolute的时候，这时候你想相对于本身移动，可以使用translate 
+        2、做动画的时候translate更适合，不会引起页面的重排和重绘 
+        3、关于transform类的，可以使用GPU加速，提高浏览器的性能？ 
+    总之：transform更适用于动画
+
+<Q&A 274> CSS 用 position: absolute 与 transform 的区别
+
+    (1) 绝对定位元素的定位基准点是其有定位元素的祖先元素;
+    (2) translate要做偏移，是相对于自身的中心点而言，如果用百分比做单位，参考值就是本身元素的宽度。
+
+    负margin水平垂直居中
+        .center {
+                position:absolute;
+                top:50%;
+                left:50%;
+                width:200px;
+                height:200px;
+                margin-top:-200/2px;
+                margin-left:-200/2px;
+        }
+
+    transform 水平垂直居中
+        .center {
+                position:relative;
+                    top:50%;
+                    left:50%;
+                    width:200px;
+                    height:200px;
+                    background:red;
+                    transform:translate(-50%,-50%);
+                    transform-origin:50% 50%;
+        }
+
+
+<Q&A 275> 
+<Q&A 276> 
+<Q&A 277> 
+<Q&A 278> 
+<Q&A 279> 
+<Q&A 280> 
+<Q&A 281> 
+<Q&A 282> 
 <Q&A 125> 
 <Q&A 125> 
 <Q&A 125> 
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
+<Q&A 125> 
+<Q&A 125> 
+<Q&A 125> 
+<Q&A 125> 
+<Q&A 125> 
 <Q&A 125>
 <Q&A 125>
 <Q&A 125>
