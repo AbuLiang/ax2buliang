@@ -5856,8 +5856,29 @@
 <Q&A 229> 圣杯 双飞翼
 
         区别：
+                圣杯布局是中间栏为两边腾开位置。（通过padding和margin）
+                双飞翼布局则是中间栏不变，将内容部分为两边腾开位置（中间main增加子main，设置子main的margin左右宽度，不能修改中间main的margin，因为width就已经占满一行）
+
              圣杯：两边固定宽度的两栏会挡住中间栏的内容，需要padding和margin调整中间栏
              双飞翼：需要改造HTML结构
+                    <header>双飞翼布局</header>
+                        <div class="bd">
+                            <div class="main text">
+                                <div class="main-content">main</div>
+                            </div>
+                            <div class="left text">
+                                left
+                            </div>
+                            <div class="right text">
+                                right
+                            </div>
+                        </div>
+                    <footer>footer</footer>
+
+                    可以看到，我们在main里面又加了一个内容层。如果知道盒子模型，就知道我们是不能直接给main添加margin属性，因为我们已经设置了width：100%，
+                    再设置margin的话就会超过窗口的宽度，所以我们再创造一个内容层，将所有要显示的内容放到main-content中，给main-content设置margin就可以了。
+                    
+                    因为不改变父元素所以只需要给main-content设置margin: 0 200px 0 200px;属性就可以了达到效果
 
 
 
@@ -7545,12 +7566,316 @@
         }
 
 
-<Q&A 275> 
-<Q&A 276> 
-<Q&A 277> 
-<Q&A 278> 
-<Q&A 279> 
-<Q&A 280> 
+<Q&A 275> 盒子模型
+
+    CSS盒模型描述了通过 文档树中的元素 以及相应的 视觉格式化模型(visual formatting model) 所生成的矩形盒子。
+    CSS 的视觉格式化模型(visual formatting model) 是根据 基础盒模型(CSS basic box model) 将 文档(doucment) 中的元素转换一个个盒子的实际算法。
+
+    content area：
+        box-sizing=content-box
+        内容区域的大小可明确地通过 width、min-width、max-width、height、min-height，和 max-height 控制。
+
+    padding area：
+        box-sizing=padding-box
+        内边距的粗细可以由 padding-top、padding-right、padding-bottom、padding-left，和简写属性 padding 控制。
+
+    border area：
+        box-sizing=margin-box
+        边框区域的大小可明确地通过 width、min-width, max-width、height、min-height，和 max-height 属性控制。
+        假如框盒上设有背景（background-color 或 background-image），背景将会一直延伸至边框的外沿（默认为在边框下层延伸，边框会盖在背景上）此默认表现可通过 CSS 属性 background-clip 来改变。
+
+    margin area：
+         box-sizing=border-box
+         外边距区域的大小由 margin-top、margin-right、margin-bottom、margin-left，和简写属性 margin 控制。
+         在发生外边距合并的情况下，由于盒之间共享外边距，外边距不容易弄清楚。
+
+    除可替换元素外，对于行内元素来说，尽管内容周围存在内边距与边框，但其占用空间（每一行文字的高度）则由 line-height 属性决定，即使边框和内边距仍会显示在内容周围。
+
+    每个盒子的布局由以下因素决定：
+        1.盒子的尺寸
+        2.盒子的类型：行内盒子 (inline)、行内级盒子 (inline-level)、原子行内级盒子 (atomic inline-level)、块级盒子 (block-level)
+        3.定位：正常流、浮动、绝对定位
+        4.文档树中当前盒子的子元素 或 兄弟元素
+        5.视口(viewport) 的尺寸 和位置
+        6.盒子内部图片的尺寸
+        7.其他某些外部因素
+
+    块级元素
+        · 当元素的display  为 block、list-item 或 table 时，它就是块级元素。
+
+    块级盒子
+        · 块级盒子用于描述它与父、兄弟元素之间的关系。
+        · 每个块级盒子都会参与 块格式化上下文（block formatting context） 的创建。
+        · 每个块级元素都会至少生成一个块级盒子，即主块级盒子（principal block-level box）
+        · 主块级盒子包含由后代元素生成的盒子以及内容，同时它也会参与定位方案。
+        · 一个同时是块容器盒子的块级盒子称为块盒子（block box）。
+
+    匿名盒子
+        · 某些情况下需要进行视觉格式化时，需要添加一些增补性的盒子，这些盒子不能被CSS 选择器选中，也就是所有可继承的 CSS 属性值都为 inherit ，
+          而所有不可继承的 CSS 属性值都为 initial。因此称为匿名盒子(anonymous boxes)。
+
+    行内盒子
+        · 行内级元素会生成行内级盒子，该盒子同时会参与行内格式化上下文（inline formatting context）的创建。
+
+    匿名行内盒子
+        · 类似于块盒子，CSS引擎有时候也会自动创建一些行内盒子。这些行内盒子无法被选择符选中，因此是匿名的，它们从父元素那里继承那些可继承的属性，其他属性保持默认值 initial。
+
+    行盒子
+        · 行盒子由行内格式化上下文创建，用来显示一行文本。在块盒子内部，行盒子总是从块盒子的一边延伸到另一边（译注：即占据整个块盒子的宽度）。
+          当有浮动元素时，行盒子会从向左浮动的元素的右边缘延伸到向右浮动的元素的左边缘。
+
+    建立 BFC(Block formatting contexts) 的条件
+          浮动、绝对定位元素、块容器（例如inline-blocks、table-cells、and table-captions）以及溢出而非可视的元素（除非该值已经传播到了视口）都是。
+
+    简单来说，BFC就是一个独立不干扰外界也不受外界干扰的盒子啊(/ω＼)。
+
+    正常流中的块级与非替换元素
+
+    'margin-left' + 'border-left-width' + 'padding-left' + 'width' + 'padding-right' + 'border-right-width' + 'margin-right' = 包含块的宽度
+
+    如果宽度不是 auto 或者 'border-left-width'+'padding-left'+'width'+'padding-right'+'border-right-width' 的结果大于包含块的宽度，对于以下规则，被视为零。
+    如果只有一个值指定为'auto'，则其使用的值来自相等。
+    如果宽度设置为 auto ，则任何其他 auto 值变为 0 ，并且宽度会跟着所以盒子的情况铺满。
+    如果 'margin-left' 跟 'margin-right' 都为 auto ，则会使元素相对于包含块的边缘水平居中。
+
+    浮动与非替换元素
+
+    如果 'margin-left' 跟 'margin-right' 都为 auto ，则它们的具体值为 0 。
+    如果宽度为 auto，则使用 shrink-to-fit 的宽度计算方式（CSS 2.2没有定义精确的算法）。
+    然后 shrink-to-fit 大概的计算方式则是：min(max(preferred minimum width, available width), preferred width)。
+
+    绝对定位与非替换元素
+
+    'left' + 'margin-left' + 'border-left-width' + 'padding-left' + 'width' + 'padding-right' + 'border-right-width' + 'margin-right' + 'right' = 包含块的宽度
+
+    如果 'left'，'width' 和 'right' 都是 'auto'，则首先将 'margin-left' 和 'margin-right' 的 'auto' 值设置为 0。
+    如果 'left'，'width' 和 'right' 都不是 'auto'，则按照实际值来算。
+    如果 'margin-left' 跟 'margin-right' 都为 0 ，则根据 'left' ，'width' 和 'right' 的值是否是 'auto' 来计算。 如果 一个方向值 ，'width' 的值是 'auto'，
+    而 '另一个一个方向值' 不是，则宽度使用 shrink-to-fit 算法计算。如果一个值为**'auto'**而另外两个值不算，则该值使用 shrink-to-fit 来计算。
+
+
+<Q&A 277> 传统盒子布局实现 水平垂直居中
+
+<Q&A 277> Flex布局
+
+    布局的传统解决方案，基于盒状模型，依赖 display 属性 + position属性 + float属性。它对于那些特殊布局非常不方便，比如，垂直居中就不容易实现。
+
+    2009年，W3C 提出了一种新的方案----Flex 布局，可以简便、完整、响应式地实现各种页面布局。
+
+    Flex 是 Flexible Box 的缩写，意为"弹性布局"，用来为盒状模型提供最大的灵活性。
+
+    任何一个容器都可以指定为 Flex 布局。
+        .box{
+        display: flex;
+        }
+    行内元素也可以使用 Flex 布局。
+        .box{
+        display: inline-flex;
+        }
+    Webkit 内核的浏览器，必须加上-webkit前缀。
+        .box{
+        display: -webkit-flex; /* Safari */
+        display: flex;
+        }
+
+    设为 Flex 布局以后，子元素的float、clear和vertical-align属性将失效。
+
+    采用 Flex 布局的元素，称为 Flex 容器（flex container），简称"容器"。它的所有子元素自动成为容器成员，称为 Flex 项目（flex item），简称"项目"。
+
+    容器默认存在两根轴：水平的主轴（main axis）和垂直的交叉轴（cross axis）。主轴的开始位置（与边框的交叉点）叫做main start，结束位置叫做main end；交叉轴的开始位置叫做cross start，结束位置叫做cross end。
+    项目默认沿主轴排列。单个项目占据的主轴空间叫做main size，占据的交叉轴空间叫做cross size。
+
+    flex容器属性：
+        flex-direction 
+            决定主轴的方向（即项目的排列方向）。
+            row（默认值）：主轴为水平方向，起点在左端。
+            row-reverse：主轴为水平方向，起点在右端。
+            column：主轴为垂直方向，起点在上沿。
+            column-reverse：主轴为垂直方向，起点在下沿。
+        flex-wrap
+            定义，如果一条轴线排不下，如何换行。
+            nowrap（默认）：不换行。
+            wrap：换行，第一行在上方。
+            wrap-reverse：换行，第一行在下方。
+        flex-flow
+            属性是flex-direction属性和flex-wrap属性的简写形式，默认值为row nowrap。
+        justify-content
+            定义了项目在主轴上的对齐方式。
+            flex-start（默认值）：左对齐
+            flex-end：右对齐
+            center： 居中
+            space-between：两端对齐，项目之间的间隔都相等。
+            space-around：每个项目两侧的间隔相等。所以，项目之间的间隔比项目与边框的间隔大一倍。
+        align-items
+            定义项目在交叉轴上如何对齐。
+            flex-start：交叉轴的起点对齐。
+            flex-end：交叉轴的终点对齐。
+            center：交叉轴的中点对齐。
+            baseline: 项目的第一行文字的基线对齐。
+            stretch（默认值）：如果项目未设置高度或设为auto，将占满整个容器的高度。
+        align-content
+            定义了多根轴线的对齐方式。如果项目只有一根轴线，该属性不起作用。
+            flex-start：与交叉轴的起点对齐。
+            flex-end：与交叉轴的终点对齐。
+            center：与交叉轴的中点对齐。
+            space-between：与交叉轴两端对齐，轴线之间的间隔平均分布。
+            space-around：每根轴线两侧的间隔都相等。所以，轴线之间的间隔比轴线与边框的间隔大一倍。
+            stretch（默认值）：轴线占满整个交叉轴。
+
+        项目属性
+            order
+                定义项目的排列顺序。数值越小，排列越靠前，默认为0。
+            flex-grow
+                定义项目的放大比例，默认为0，即如果存在剩余空间，也不放大。
+                如果所有项目的flex-grow属性都为1，则它们将等分剩余空间（如果有的话）。如果一个项目的flex-grow属性为2，其他项目都为1，则前者占据的剩余空间将比其他项多一倍。
+            flex-shrink
+                定义了项目的缩小比例，默认为1，即如果空间不足，该项目将缩小。
+                如果所有项目的flex-shrink属性都为1，当空间不足时，都将等比例缩小。如果一个项目的flex-shrink属性为0，其他项目都为1，则空间不足时，前者不缩小。
+                负值对该属性无效。
+            flex-basis
+                定义了在分配多余空间之前，项目占据的主轴空间（main size）。浏览器根据这个属性，计算主轴是否有多余空间。它的默认值为auto，即项目的本来大小。
+                它可以设为跟width或height属性一样的值（比如350px），则项目将占据固定空间。
+            flex
+                flex-grow, flex-shrink 和 flex-basis的简写，默认值为0 1 auto。后两个属性可选。
+                该属性有两个快捷值：auto (1 1 auto) 和 none (0 0 auto)。
+            align-self
+                允许单个项目有与其他项目不一样的对齐方式，可覆盖align-items属性。默认值为auto，表示继承父元素的align-items属性，如果没有父元素，则等同于stretch。
+                该属性可能取6个值，除了auto，其他都与align-items属性完全一致。
+
+            水平垂直居中
+                justify-content: center; //主轴上居中 水平
+                align-items: center;  //交叉轴上居中 垂直 
+                // 如果有多行，即多个主轴 垂直居中如下
+                align-content: center;
+
+<Q&A 278> Grid布局
+
+        网格布局（Grid）是最强大的 CSS 布局方案。
+
+        它将网页划分成一个个网格，可以任意组合不同的网格，做出各种各样的布局。以前，只能通过复杂的 CSS 框架达到的效果，现在浏览器内置了。
+
+        Flex 布局是轴线布局，只能指定"项目"针对轴线的位置，可以看作是一维布局。Grid 布局则是将容器划分成"行"和"列"，产生单元格，然后指定"项目所在"的单元格，可以看作是二维布局。
+        Grid 布局远比 Flex 布局强大。
+
+    容器：网格布局区域。
+    项目：容器内部采用网格定位的子元素，只能是容器的顶层元素，不包含项目的子元素。
+    
+        Grid布局只对项目生效。
+
+        容器里面的水平区域称为"行"（row），垂直区域称为"列"（column）。
+        行和列的交叉区域，称为"单元格"（cell）。
+
+    Grid 布局的属性分成两类：
+        
+        一类定义在容器上面，称为容器属性；
+                display: grid指定一个容器采用网格布局。
+                    默认情况下，容器元素都是块级元素，但也可以设成行内元素。
+                        div {
+                            display: inline-grid;
+                        }
+                    设为网格布局以后，容器子元素（项目）的float、display: inline-block、display: table-cell、vertical-align和column-*等设置都将失效。
+                
+                grid-template-columns: 100px 100px 100px; 定义每一列的列宽，
+                grid-template-rows: 33.33% 33.33% 33.33%; 定义每一行的行高。
+                grid-template-columns: repeat(3, 33.33%);  重复后面值3次。
+                grid-template-columns: repeat(2, 100px 20px 80px);  重复后面三个值的模式。
+                grid-template-columns: repeat(auto-fill, 100px);  每列宽度100px，然后自动填充，直到容器不能放置更多的列。
+                grid-template-columns: 1fr 1fr;  后者是前者的两倍。
+                grid-template-columns: 150px 1fr 2fr;  第一列的宽度为150像素，第二列的宽度是第三列的一半。
+                grid-template-columns: 1fr 1fr minmax(100px, 1fr);  列宽不小于100px，不大于1fr。
+                grid-template-columns: 100px auto 100px;  浏览器自己决定长度，基本上等于该列单元格的最大宽度。
+                grid-template-columns: [c1] 100px [c2] 100px [c3] auto [c4];  指定每一根网格线的名字。网格布局允许同一根线有多个名字，比如[fifth-line row-5]。
+                grid-template-columns: 70% 30%;  两栏式布局只需要一行代码。
+                grid-template-columns: repeat(12, 1fr);  传统的十二网格布局。
+
+                row-gap: 20px; 设置行与行的间隔（行间距），
+                column-gap: 20px; 设置列与列的间隔（列间距）。
+                gap: <row-gap> <column-gap>;  省略了第二个值，浏览器认为第二个值等于第一个值。
+
+                grid-template-areas: 'a b c'   定义区域
+                                     'd e f'
+                                     'g h i';
+                grid-template-areas: 'a a a'  多个单元格合并成一个区域, 如果某些区域不需要利用，则使用"点"（.）表示。
+                                     'b b b'
+                                     'c . c';
+                grid-template-areas: "header header header"  顶部是页眉区域header，底部是页脚区域footer，中间部分则为main和sidebar。
+                                     "main main sidebar"
+                                     "footer footer footer";
+
+                区域的命名会影响到网格线。每个区域的起始网格线，会自动命名为区域名-start，终止网格线自动命名为区域名-end。
+                
+                grid-auto-flow:row  子元素排列顺序，即"先行后列"。
+                还可以设成row dense和column dense。这两个值主要用于，某些项目指定位置以后，剩下的项目怎么自动放置。
+
+                justify-items: start | end | center | stretch;  设置单元格内容的水平位置（左中右）
+                align-items: start | end | center | stretch;  设置单元格内容的垂直位置（上中下）。
+                    start：对齐单元格的起始边缘。
+                    end：对齐单元格的结束边缘。
+                    center：单元格内部居中。
+                    stretch：拉伸，占满单元格的整个宽度（默认值）。
+                place-items: <align-items> <justify-items>;  合并简写形式。
+                
+                justify-content: start | end | center | stretch | space-around | space-between | space-evenly;  是整个内容区域在容器里面的水平位置（左中右）
+                align-content: start | end | center | stretch | space-around | space-between | space-evenly;  是整个内容区域的垂直位置（上中下）。
+                    start - 对齐容器的起始边框。
+                    end - 对齐容器的结束边框。
+                    center - 容器内部居中。
+                    stretch - 项目大小没有指定时，拉伸占据整个网格容器。
+                    space-around - 每个项目两侧的间隔相等。所以，项目之间的间隔比项目与容器边框的间隔大一倍。
+                    space-between - 项目与项目的间隔相等，项目与容器边框之间没有间隔。
+                    space-evenly - 项目与项目的间隔相等，项目与容器边框之间也是同样长度的间隔。
+                place-content: <align-content> <justify-content>;  合并简写形式。
+
+                grid-auto-columns: 设置浏览器自动创建的多余网格的列宽
+                grid-auto-rows: 设置浏览器自动创建的多余网格的行高
+
+                grid-template: 是grid-template-columns、grid-template-rows和grid-template-areas这三个属性的合并简写形式。
+                grid: 是grid-template-rows、grid-template-columns、grid-template-areas、 grid-auto-rows、grid-auto-columns、grid-auto-flow这六个属性的合并简写形式。
+
+        一类定义在项目上面，称为项目属性。
+                
+        grid-column-start属性：2; 左边框所在的垂直网格线.
+        grid-column-end属性：4; 右边框所在的垂直网格线.
+        grid-row-start属性：header-start; 上边框所在的水平网格线.
+        grid-row-end属性：header-end; 下边框所在的水平网格线.
+        grid-column-start: span 2;  边框跨越2个网格.
+
+        grid-column属性是grid-column-start和grid-column-end的合并简写形式.
+        grid-row属性是grid-row-start属性和grid-row-end的合并简写形式。
+
+        grid-area属性指定项目放在哪一个区域。
+        grid-area属性还可用作grid-row-start、grid-column-start、grid-row-end、grid-column-end的合并简写形式
+
+        justify-self: 设置单元格内容的水平位置（左中右），跟justify-items属性的用法完全一致，但只作用于单个项目。
+        align-self: 设置单元格内容的垂直位置（上中下），跟align-items属性的用法完全一致，也是只作用于单个项目。
+        place-self属性是align-self属性和justify-self属性的合并简写形式。
+
+
+
+<Q&A 279> css层叠顺序
+
+    什么选择器在层叠中胜出取决于三个因素（这些都是按重量级顺序排列的——前面的的一种会否决后一种）：
+        重要性（Importance）
+        专用性（Specificity）
+        源代码次序（Source order）
+        
+    一个特别的语法可以让一条规则总是优先于其他规则：!important。
+
+<Q&A 280> css可替换元素
+
+    典型的可替换元素有：
+        <iframe>
+        <video>
+        <embed>
+        <img>
+    有些元素仅在特定情况下被作为可替换元素处理，例如：
+        <option>
+        <audio>
+        <canvas>
+        <object>
+        <applet>
+    HTML 规范也说了 <input> 元素可替换，因为 "image" 类型的 <input> 元素就像<img>一样被替换。但是其他形式的控制元素，包括其他类型的 <input> 元素，被明确地列为非可替换元素
+
 <Q&A 281> 
 <Q&A 282> 
 <Q&A 125> 
