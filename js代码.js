@@ -332,7 +332,20 @@ $(function () {
     });
   });
 });
-
+/* 
+ * 原生js ajax
+ */
+var ajax = new XMLHttpRequest();
+ajax.onreadystatechange = function () {
+  if (ajax.readyState == 4 && ajax.status == 200) {
+    console.log(ajax.responseXML);
+    document.querySelector('h1').innerHTML = ajax.responseXML;
+  }
+}; // onreadystatechange必须在open()前指定
+ajax.open("get", "url", async = true);
+// post提交数据,必须添加此行; 也有人说不用（jquery下）
+ajax.setResponseHeader("Content-type", "application/x-www-form-urlencoded");
+ajax.send();
 
 $(document).ready(function () {
   $ajax({
@@ -356,9 +369,25 @@ $(document).ready(function () {
   });
 });
 
+// GET
+$.get('/api', function(res) {
+  // do something
+});
+
+// POST
+var data = {
+  username: 'admin',
+  password: 'root'
+};
+$.post('/api', data, function(res) {
+  // do something
+});
+
 JSON.parse(); // zhuan js
 JSON.stringify(); // zhuan json
 
+
+//jquery封装的ajax
 $(function () {
   $ajax({
     type: "post",
@@ -1024,29 +1053,33 @@ function insertSort(arr) {
 /**
  * Promise 实现 ajax
  */
-var getJSON = function (url) {
-  var client = new XMLHttpRequest();
-  client.open("GET", url, true);
-  client.responseType = "json";
-  client.onreadystatechange = handler;
-  client.setRequestHeader("Accept", "application");
-  client.send();
+var getJson = function(url) {
+  var promise = new Promise(function(resolve, reject) {
+      var client = new XMLHttpRequest();
+      client.open('GET',url);
+      client.onreadystatechange = handler;
+      client.responseType = 'json';
+      client.setRquestHeader('Accept', 'application/json');
+      client.send();
 
-  var handler = function () {
-    if (readyState !== 4) {
-      return;
-    }
-    if (status == 200) {
-      reslove(this.response);
-    } else {
-      reject(new Error(this.statusText));
-    }
-  };
+      function handler() {
+          if(readyState !== 4) {
+              return;
+          }
+          if(status == 200) {
+              resolve(this.response);
+          } else {
+              reject(new Error(this.statusText));
+          }
+      }
+  });
+  return promise;
 };
-getJSON("/json.json").then(function (json) {
-  console.log(json);
-}, function (error) {
-  console.error(error);
+
+getJson('/posts.json').then(function(json) {
+  console.log('Content:' + json);
+}, function(error) {
+  console.error('出错了' + error);
 });
 
 /*
@@ -1402,4 +1435,223 @@ function palindrome(str) {
 		}
 	}
 	return true;
+}
+
+/**
+ *  Fetch 实现 post请求
+ */
+// Example POST method implementation:
+postData('http://example.com/answer', {answer: 42})
+  .then(data => console.log(data)) // JSON from `response.json()` call
+  .catch(error => console.error(error))
+
+function postData(url, data) {
+  // Default options are marked with *
+  return fetch(url, {
+    body: JSON.stringify(data), // must match 'Content-Type' header
+    cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+    credentials: 'same-origin', // include, same-origin, *omit
+    headers: {
+      'user-agent': 'Mozilla/4.0 MDN Example',
+      'content-type': 'application/json'
+    },
+    method: 'POST', // *GET, POST, PUT, DELETE, etc.
+    mode: 'cors', // no-cors, cors, *same-origin
+    redirect: 'follow', // manual, *follow, error
+    referrer: 'no-referrer', // *client, no-referrer
+  })
+  .then(response => response.json()) // parses response to JSON
+}
+
+
+/**
+ * ajax 原生实现 
+ * 
+ */
+var ajax = new XMLHttpRequest();
+ajax.onreadystatechange = function () {
+  if (ajax.readyState == 4 && ajax.status == 200) {
+    console.log(ajax.responseXML);
+    document.querySelector('h1').innerHTML = ajax.responseXML;
+  }
+}; // onreadystatechange必须在open()前指定
+ajax.open("get", "url", async = true);
+// post提交数据,必须添加此行; 也有人说不用（jquery下）
+ajax.setResponseHeader("Content-type", "application/x-www-form-urlencoded");
+ajax.send();
+ 
+
+
+/**
+ * ajax Jquery实现 
+ * 
+ */
+$(document).ready(function () {
+  $('#send').click(function () {
+    $ajax({
+      type: "post",
+      url: "http://api.passport.pptv.com/v3/login/qrcode.do", // POST请求不需要拼url，指定data，ajax传递时会自动拼成url。
+      port: 8080,
+      async: false, // 默认true异步
+      time: 1000, //haomiao
+      cache: false,
+      dataType: "jsonp", // jsonp下，jquery会自将‘cb=?’中的？替换成正确的函数，以执行回调函数
+      data: {
+        from: "clt",
+        qrid: qrid,
+        username: username,
+        token: token,
+      },
+      success: function (data) {
+        if (data.errorcode == 0) {
+          $('#nickname').val(mylogin.name);
+        } else {
+          $('#nickname').val("name");
+        }
+      },
+      error: function (jqXHR) {
+        console.log("Error:" + jqXHR.status);
+      },
+    });
+  })
+});
+
+
+/**
+ * 基于XHR的ajax POST 改写为Fetch实现 
+ * 
+ */
+
+ var options = {
+   method: 'post',
+   headers: {
+     'Accept': 'application/json',
+     'Content-type': 'application/json'
+   },
+   body: JSON.stringify({ username: 'admin', password: 'root'} ),
+   credentials: 'include'
+ };
+ fetch('api/', options).then(response => response.json())
+ .then(data => console.log(data))
+ .catch(error => console.log('Ops, error:', error))
+
+ /**
+ * ajax Promise实现 
+ * 
+ */
+
+var getJson = function(url) {
+  var promise = new Promise(function(resolve, reject) {
+      var client = new XMLHttpRequest();
+      client.open('GET',url);
+      client.onreadystatechange = handler;
+      client.responseType = 'json';
+      client.setRquestHeader('Accept', 'application/json');
+      client.send();
+
+      function handler() {
+          if(readyState !== 4) {
+              return;
+          }
+          if(status == 200) {
+              resolve(this.response);
+          } else {
+              reject(new Error(this.statusText));
+          }
+      }
+  });
+  return promise;
+};
+
+getJson('/posts.json').then(function(json) {
+  console.log('Content:' + json);
+}, function(error) {
+  console.error('出错了' + error);
+});
+
+
+/**
+ * 兼容模式 事件绑定 事件代理 
+ */
+
+// 兼容 事件绑定
+var EventUtil = {
+  getEvent: function(event) {
+    return event ? event : window.event
+  },
+  getTarget: function(event) {
+    return event.target || event.srcElement
+  },
+  preventDefault: function(event) {
+    if (event.preventDefault) {
+      event.preventDefault()
+    } else {
+      event.returnValue = false
+    }
+  },
+  stopPropagation: function(event) {
+    if (event.stopPropagation) {
+      event.stopPropagation()
+    } else {
+      event.cancelBubble = true
+    }
+  },
+  addHandler: function(element, type, handler) {
+    if (element.addEventListener) {
+      element.addEventListener(type, handler, false) // DOM 2 feiIE
+    } else if (element.attachEvent) {
+      element.attachEvent('on' + type, handler) // DOM 2 IE
+    } else {
+      element['on' + type] = handler  // DOM 0
+    }
+  },
+  removeHandler: function(element, type, handler) {
+    if (element.removeEventListener) {
+      element.removeEventListener(type, handler, false)
+    } else if (element.detachEvent) {
+      element.detachEvent('on' + type, handler)
+    } else {
+      element['on' + type] = null
+    }
+  }
+}
+
+// 事件绑定 
+window.onload = function () {
+  var type = 'click'
+  var oUl = document.getElementById('ul1')
+  var aLi = oUl.getElementsByTagName('li')
+  var  handler1 = function() {
+    console.log(123)
+  }
+  for (var i=0;i<aLi.length;i++) {
+    EventUtil.addHandler(aLi[i], type, handler1)
+  }
+}
+
+
+// 事件代理
+window.onload = function () {
+  var type = 'click'
+  var oUl = document.getElementById('ul1')
+  var handler2 = function(ev) {
+    var event = EventUtil.getEvent(ev)
+    var target = EventUtil.getTarget(event)
+    if (target.nodeName.toLowerCase() == 'li') {
+      //截获冒泡  后续处理
+    }
+  }
+  EventUtil.addHandler(oUl, type, handler2)
+}
+
+/**
+ * jsonp 
+ */
+
+var script = document.createElement('script')
+script.src = 'https://www.baidu.com/jsonp?callback=handler()'
+document.body.insertBefore('script',document.body.firstChild)
+
+function handler(response) {
+  ...
 }

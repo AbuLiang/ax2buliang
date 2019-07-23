@@ -820,21 +820,31 @@
      DOMFocusOut 和 DOMFocusIn 冒泡 是 Opera 事件
 
 <Q&A 83> 为什么需要块级作用域
+
     1.防止由于变量提升导致内层变量覆盖外层变量
     2.防止计数的循环变量泄漏到全局
     3.可以代替IIFE(立即执行函数) IIFE最常见的应用场景就是：将var变量的作用域限制于你们函数内，这样可以避免命名冲突。
+
 <Q&A 84> ES5 和 ES6 区别
+
     1.es5不允许块级作用域内声明函数，es6允许
+
     2.es5只能通过 var function 命令声明变量， es6 增加了 let const import class
+    
     3.es5中顶层对象的属性和全局变量是等价的 var a=12; window.a // 12  
       es6中 var function声明的变量是顶层对象的属性，而let和const calss声明的不是，全变与顶对逐渐隔离
+
     4.es5中 浏览器顶层对象是window，浏览器和web worker的self指向 顶层对象，Node 没有self，其顶层对象是global
       全局环境中，this返回顶层对象， 在Node和ES6模块中，this返回当前模块。
+
     5.es6 允许模式匹配赋值 let [a,b,c] = [1,2,3];
+
     6.es5不允许为函数的参数设置默认值，默认值是惰性求值的，es6允许 指定默认值后，length属性失真，返回第一个具有默认值的参数之前的没有默认值的参数个数
+
     7.es5函数内部可以 严格模式， es6 函数参数使用默认值，解构赋值或者扩展运算符，就不能 严格模式 
         原因：严格模式同时适用于参数和函数体，但只有从函数体中才能知道参数是否应该严格，而执行顺序则是先参后体
         办法：全局严格模式；把函数包在IIFE里，IIFE里声明 “use strict”
+
     8.es6新增 set、map
         js原有表示集合的数据结构：array 和 object ，es6 新增 set map
         const set = new Set([1,1,2,4,5,3,2]);
@@ -996,6 +1006,81 @@
                     用export和import
                     import {port, getAccounts} from 'module'
                     console.log(port) // 3000
+        
+    24. es6对象扩展
+                    Object.is()
+                                ES5比较两个值是否相等，只有两个运算符：相等运算符（==）和严格相等运算符（===）。
+                                它们都有缺点，前者会自动转换数据类型，后者的NaN不等于自身，以及+0等于-0。
+                                JavaScript缺乏一种运算，在所有环境中，只要两个值是一样的，它们就应该相等。
+                                
+                                它用来比较两个值是否严格相等，与严格比较运算符（===）的行为基本一致。
+                                    Object.is('foo', 'foo')
+                                    // true
+                                    Object.is({}, {})
+                                    // false
+                                    
+                                    +0 === -0 //true
+                                    NaN === NaN // false
+
+                                    Object.is(+0, -0) // false
+                                    Object.is(NaN, NaN) // true
+
+                    Object.assign()
+                                用于对象的合并，将源对象（source）的所有可枚举属性，复制到目标对象（target）。
+                                会忽略enmerable为false的属性
+                                var target = { a: 1 };
+                                var source1 = { b: 2 };
+                                var source2 = { c: 3 };
+
+                                Object.assign(target, source1, source2);
+                                target // {a:1, b:2, c:3}
+                    
+                    __proto__属性、Object.setPrototypeOf()、Object.getPrototypeOf()
+                                Object.setPrototypeOf方法的作用与__proto__相同，用来设置一个对象的prototype对象。它是ES6正式推荐的设置原型对象的方法。
+                                // 格式
+                                Object.setPrototypeOf(object, prototype)
+
+                                // 用法
+                                var o = Object.setPrototypeOf({}, null);
+                                该方法等同于下面的函数。
+
+                                function (obj, proto) {
+                                obj.__proto__ = proto;
+                                return obj;
+                                } 
+                    
+                    Object.values()，Object.entries()
+                                Object.keys() 是es5引入的，返回一个数组，成员是参数对象自身的（不含继承的）所有可遍历（enumerable）属性的键名。
+                                目前，ES7有一个提案，引入了跟 Object.keys()配套的 Object.values()和 Object.entries()
+                                Object.values()方法返回一个数组，成员是参数对象自身的（不含继承的）所有可遍历（enumerable）属性的键值。
+                                Object.values()返回数组的成员顺序，与本章的《属性的遍历》部分介绍的排列规则一致。
+
+                                    var obj = { 100: 'a', 2: 'b', 7: 'c' };
+                                    Object.values(obj)
+                                    // ["b", "c", "a"]
+
+                                    Object.values('foo')
+                                    // ['f', 'o', 'o']
+                                
+                                Object.entries() 方法返回一个数组，成员是参数对象自身的（不含继承的）所有可遍历（enumerable）属性的键值对数组。
+                                    var obj = { foo: 'bar', baz: 42 };
+                                    Object.entries(obj)
+                                    // [ ["foo", "bar"], ["baz", 42] ]
+                                    除了返回值不一样，该方法的行为与Object.values基本一致。
+                                    Object.entries() 的基本用途是遍历对象的属性。
+        
+    25. 会忽略enmerable为false的属性的操作
+                es5
+                    for...in循环：只遍历对象自身的和继承的可枚举的属性
+                    Object.keys()：返回对象自身的所有可枚举的属性的键名
+                    JSON.stringify()：只串行化对象自身的可枚举的属性
+                es6 增加了Object.assign
+    
+    26. es6数组扩展
+                    Array.from()
+                    Array.of()
+                    fill()
+                                        
 
 <Q&A 85> ES6 块级作用域声明函数报错
 
@@ -2697,6 +2782,8 @@
 
 <Q&A 159> JS 事件循环 event loop
 
+          见 195
+        
 <Q&A 160> Promise
 
         概念： 一种容器，包含之后需要进行的操作(异步)，
@@ -2959,7 +3046,51 @@
                     // ['hello', Error: 出错了]
                     // p1会resolved，p2首先会rejected，但p2有catch方法，该方法返回一个新的Promise实例，p2实际上指向这个实例，该实例执行完catch后会变成resolved（并不是p2变，而是这个新实例，p2状态已固定为rejected）
                     // 此时Promise.all()的两个实例都会resolved，因此会调用.all的then方法，而不是catch
-        
+
+                    // promise.all源码
+                    Promise.all = function(arr) {
+                        return new Promise(function(resolve, reject) {
+                            if (!arr || typeof arr.length === 'undefined')
+                                throw new TypeError('Promise.all accepts an array');
+                            var args = Array.prototype.slice.call(arr);
+                            if (args.length === 0) return resolve([]);
+                            var remaining = args.length;
+
+                            function res(i, val) {
+                                try {
+                                    // 如果 val 是 Promise 对象的话，则执行 Promise,直到 resolve 了一个非 Promise 对象
+                                    if (val && (typeof val === 'object' || typeof val === 'function')) {
+                                        var then = val.then;
+                                        if (typeof then === 'function') {
+                                            then.call(
+                                                val,
+                                                function(val) {
+                                                    res(i, val);
+                                                },
+                                                reject
+                                            );
+                                            return;
+                                        }
+                                    }
+                                    // 用当前resolve||reject 的值重写 args[i]{Promise} 对象
+                                    args[i] = val;
+                                    // 直到所有的 Promise 都执行完毕，则 resolve all 的 Promise 对象，返回args数组结果
+                                    if (--remaining === 0) {
+                                        resolve(args);
+                                    }
+                                } catch (ex) {
+                                    // 只要其中一个 Promise 出现异常，则全部的 Promise 执行退出，进入 catch异常处理
+                                    // 因为 resolve 和 reject 回调有 done 变量的保证只能执行一次，所以其他的 Promise 都不执行
+                                    reject(ex);
+                                }
+                            }
+
+                            for (var i = 0; i < args.length; i++) {
+                                res(i, args[i]);
+                            }
+                        });
+                    };
+                            
         Promise.race()
                 race也是将多个Promise实例封装到一起
                 var p = Promise.race([p1,p2,p3]);
@@ -3374,10 +3505,20 @@
             var generator = f(); // f没有立即执行，只有调用next才执行，普通函数此时已执行
             setTimeout(function() {generator.next()}, 3000);
 
+        yield没有返回值，总是返回undefined
         next()可以接受一个参数，表示上一条yield的返回值，所以第一次调用next是无法传参的
             可以在Generator函数开始运行后继续向函数内部注入值
 
         for...of 不需要next就能遍历Generator内部状态，但无法遍历最后return的状态
+           function *foo() {
+               yield 1;
+               yield 2;
+               yield 3;
+               return 4;
+           }
+           for (let v of foo()) {
+               console.log(v);  // 1 2 3
+           }
         除了for...of循环以外，扩展运算符（...）、解构赋值和Array.from方法内部调用的，都是遍历器接口。这意味着，它们都可以将Generator函数返回的Iterator对象，作为参数。
 
         Generator.prototype.throw()
@@ -3778,7 +3919,7 @@
             ·适用性：  co模块规定yield后面只能是Thunk函数或Promise对象， await后面可以是Promise对象或原始值（数值、字符、布尔型 此时是同步操作）
             ·返回值是Promise：  Generator返回Iterator对象，async返回Promise对象 可以用then指定下一步操作
 
-            async函数可以看作多个异步操作封装成的一个Promise对象，为await就是内部then的语法糖
+            async函数可以看作多个异步操作封装成的一个Promise对象，而await就是内部then的语法糖
 
             用法
                 当执行函数时，遇到await就先返回，等异步操作完成，再接着执行后面语句。可以用then为返回的Promise添加回调
@@ -4932,7 +5073,12 @@
         基排
             先按低位余数分组，再按高位余数分组，依次输出
 
-<Q&A 195> JS事件循环机制
+<Q&A 195> JS事件循环机制 浏览器/Nodejs
+
+浏览器--http://lynnelv.github.io/js-event-loop-browser
+
+            异步背后的“靠山”就是event loops。这里的异步准确的说应该叫浏览器的event loops或者说是javaScript运行环境的event loops，
+            因为ECMAScript中没有event loops，event loops是在HTML Standard定义的。
 
             macrotask: 主体js代码、事件回调、XHR回调、定时器(setTimeout/setInterval/setImmediate)、I/O操作、UI render
             microtask: 更新应用程序状态的任务、Promise回调、MutationObserver、process.nextTick、Object.observe
@@ -5023,6 +5169,103 @@
                 b) 执行完当前microtask队列的所有任务
                 c) UI render
             3.浏览器只保证requestAnimationFrame的回调在重绘之前执行，没有确定的时间，何时重绘由浏览器决定
+
+
+Node.js--http://lynnelv.github.io/js-event-loop-nodejs
+
+        Node.js采用V8作为js的解析引擎，而I/O处理方面使用了自己设计的libuv，libuv是一个基于事件驱动的跨平台抽象层，封装了不同操作系统一些底层特性，对外提供统一的API，事件循环机制也是它里面的实现
+        根据Node.js官方介绍，每次事件循环都包含了6个阶段，对应到 libuv 源码中的实现：
+            timers 阶段：这个阶段执行timer（setTimeout、setInterval）的回调
+            I/O callbacks 阶段：执行一些系统调用错误，比如网络通信的错误回调
+            idle, prepare 阶段：仅node内部使用
+            poll 阶段：获取新的I/O事件, 适当的条件下node将阻塞在这里
+            check 阶段：执行 setImmediate() 的回调
+            close callbacks 阶段：执行 socket 的 close 事件回调
+
+            timers 阶段
+                    timers 是事件循环的第一个阶段，Node 会去检查有无已过期的timer，如果有则把它的回调压入timer的任务队列中等待执行，
+                    事实上，Node 并不能保证timer在预设时间到了就会立即执行，因为Node对timer的过期检查不一定靠谱，它会受机器上其它运行程序影响，
+                    或者那个时间点主线程不空闲。比如下面的代码，setTimeout() 和 setImmediate() 的执行顺序是不确定的。
+                        // setTimeout(() => {
+                        //      console.log('timeout')
+                        // }, 0)
+
+                        // setImmediate(() => {
+                        //     console.log('immediate')
+                        // })
+                    但是把它们放到一个I/O回调里面，就一定是 setImmediate() 先执行，因为poll阶段后面就是check阶段。
+
+            poll 阶段
+                    poll 阶段主要有2个功能：
+
+                    处理 poll 队列的事件
+                    当有已超时的 timer，执行它的回调函数
+                    even loop将同步执行poll队列里的回调，直到队列为空或执行的回调达到系统上限（上限具体多少未详），接下来even loop会去检查有无预设的setImmediate()，分两种情况：
+
+                    若有预设的setImmediate(), event loop将结束poll阶段进入check阶段，并执行check阶段的任务队列
+                    若没有预设的setImmediate()，event loop将阻塞在该阶段等待
+
+                    注意一个细节，没有setImmediate()会导致event loop阻塞在poll阶段，这样之前设置的timer岂不是执行不了了？所以咧，在poll阶段event loop会有一个检查机制，
+                    检查timer队列是否为空，如果timer队列非空，event loop就开始下一轮事件循环，即重新进入到timer阶段。
+
+            check 阶段
+                    setImmediate()的回调会被加入check队列中
+
+        小结
+            event loop 的每个阶段都有一个任务队列
+            当 event loop 到达某个阶段时，将执行该阶段的任务队列，直到队列清空或执行的回调达到系统上限后，才会转入下一个阶段
+            当所有阶段被顺序执行一次后，称 event loop 完成了一个 tick
+
+        浏览器环境下，microtask的任务队列是每个macrotask执行完之后执行。
+        Node.js中，microtask会在事件循环的各个阶段之间执行，也就是一个阶段执行完毕，就会去执行microtask队列的任务。
+
+            // setTimeout(()=>{
+            //     console.log('timer1')
+            //     Promise.resolve().then(function() {
+            //         console.log('promise1')
+            //     })
+            // }, 0)
+
+            // setTimeout(()=>{
+            //     console.log('timer2')
+            //     Promise.resolve().then(function() {
+            //         console.log('promise2')
+            //     })
+            // }, 0)
+            
+            在浏览器的结果就是下面这个了，道理都懂，就不累述了。
+
+                timer1
+                promise1
+                timer2
+                promise2
+
+            那么Node下执行看看，跟浏览器的运行结果并不一样~
+
+                timer1
+                timer2
+                promise1
+                promise2
+
+        Nodejs    
+            首先进入timers阶段，执行timer1的回调函数，打印timer1，并将promise1.then回调放入microtask队列，同样的步骤执行timer2，打印timer2；
+            至此，timer阶段执行结束，event loop进入下一个阶段之前，执行microtask队列的所有任务，依次打印promise1、promise2。
+
+            来自官方文档有意思的一句话，从语义角度看，setImmediate() 应该比 process.nextTick() 先执行才对，而事实相反，命名是历史原因也很难再变。
+
+        process.nextTick() VS setImmediate()
+            process.nextTick() 会在各个事件阶段之间执行，一旦执行，要直到nextTick队列被清空，才会进入到下一个事件阶段，
+            所以如果递归调用 process.nextTick()，会导致出现I/O starving（饥饿）的问题：
+
+            嵌套调用的 setImmediate() 回调，被排到了下一次event loop才执行，所以不会出现阻塞。
+
+        总结
+            Node.js 的事件循环分为6个阶段
+            浏览器和Node 环境下，microtask 任务队列的执行时机不同
+            Node.js中，microtask 在事件循环的各个阶段之间执行
+            浏览器端，microtask 在事件循环的 macrotask 执行完之后执行
+            递归的调用process.nextTick()会导致I/O starving，官方推荐使用setImmediate()
+
 
 <Q&A 196> Browser 进程与浏览器内核的通信过程
 
@@ -5367,9 +5610,8 @@
                 document.getElementById("userName").value = val;
             }
         });
-        // document.getElementById("userName").addEventListener("keyup", function (e) { // 
-        //     obj.userName = e.target.value;
-        // });
+        
+        // document.getElementById("userName").addEventListener("keyup", function (e) {obj.userName = e.target.value;});
     </script>
     
     Object.defineProperty() 具有 get和set 方法，get可以获取页面数据变化，绑定到obj上，set能自动监听 obj 上属性的值的变化，将变化显示到页面，不需要设置监听事件
@@ -6141,6 +6383,14 @@
     
 <Q&A 242> JSONP
 
+    JSONP是通过动态 <script> 元素来使用的，使用时可以为 src 属性指定一个跨域URL。这里的 <script> 元素与 <img> 元素类似，都有能力不受限制地从其他域加载资源。
+    因为JSONP是有效的JavaScript代码，所以在请求完成后，即在JSONP响应加载到页面中以后，就会立即执行。
+
+    JSONP之所以在开发人员中极为流行，主要原因是它非常简单易用。与图像Ping相比，它的优点在于能够直接访问响应文本，支持在浏览器与服务器之间双向通信。不过，JSONP也有不足。
+
+    首先，JSONP是从其他域中加载代码执行。如果其他域不安全，很可能会在响应中夹带一些恶意代码，而此时除了完全放弃JSONP调用之外，没有办法追究。
+    因此在使用不是你自己运维的Web服务时，一定得保证它安全可靠。
+
     <script>
         var script = document.createElement('script');
         script.type = 'text/javascript';
@@ -6196,7 +6446,7 @@
         render执行的结果得到的并不是真正的DOM节点，而仅仅是javascript对象，称之为虚拟DOM
 
         利用js原生api和jQuery等修改DOM时，浏览器会从构建DOM开始执行一边完整的流程。例如在一次操作中需要修改10个DOM节点，最好的方式是一次性完成DOM的构建，
-        然后再进行后续操作。但浏览器没那么只能，无法预知后续的9次修改，收到第一次更新请求后就立即执行流程，所以会连续执行10次完整的流程。显然像计算DOM节点坐标值都是白白浪费性能，当前一次DOM更新后，
+        然后再进行后续操作。但浏览器没那么zhi能，无法预知后续的9次修改，收到第一次更新请求后就立即执行流程，所以会连续执行10次完整的流程。显然像计算DOM节点坐标值都是白白浪费性能，当前一次DOM更新后，
         后续的节点坐标便会发生变。
         即使计算机硬件一直更迭，操作DOM仍然是非常昂贵的，频繁操作仍会出现页面卡顿，影响用户体验，真实的DOM节点，即使一个div也包含很多属性。
         虚拟DOM就是为了解决这个浏览器性能问题而提出的。如果一次操作中包含10更新DOM，虚拟DOM不会直接操作DOM，而是先将10次更新的diff内容保存到本地的一个js对象中，最后将js对象一次性attach到DOM树上，
@@ -6690,7 +6940,7 @@
              </div>
              ...
             <script>
-                props: {
+                props: { // 类型检查模式，不用 props:['title']
                     title: {
                         type: String,
                         required: true,
@@ -6718,7 +6968,7 @@
                 // 页面中生成的子组件标签。 因为sub只有一个div，所以这里type="div"属性没有在sub中的 Props 里声明，其实是绑定在sub根元素上的
                 <div data-v-449162b3 class="communication-sub one" type="div">父组件的值</div>  
                 
-            class和style合并，其他属性会替换根元素上的属性值。并且 inheritAttrs不会影响 class和style 的绑定，下面开启 inheritAttrs：
+            这是 Vue 默认处理的，class和style合并，其他属性会替换根元素上的属性值。并且 inheritAttrs不会影响 class和style 的绑定，下面关闭 inheritAttrs：
 
                 // communication-sub.vue
                 <div class="communication-sub">
@@ -6744,10 +6994,10 @@
                 // communication.vue
                 <communication-sub v-bind="dataProps" class="one" type="div"></communication-sub>
             结果：
-                // 页面中生成的子组件标签。由于开启了inheritAttrs，而且 sub中的Props没有声明type，所以type="div"属性消失了
+                // 页面中生成的子组件标签。由于显示关闭了inheritAttrs，而且 sub中的Props没有声明type，所以type="div"属性消失了，而class不受影响
                 <div data-v-449162b3 class="communication-sub one">父组件的值</div>
 
-            开启 inheritAttrs， 但在子组件 Props 里声明 type：
+            关闭 inheritAttrs， 但在子组件 Props 里声明 type：
                 
                 // communication-sub.vue
                 <div class="communication-sub" :type="typ">
@@ -6779,8 +7029,8 @@
                 // communication.vue
                 <communication-sub v-bind="dataProps" class="one" type="div"></communication-sub>
             结果：
-                // 页面中生成的子组件标签。这次type="div"属性并不是绑在sub跟元素上，而是我们具体指定的元素上（不过这里指定的div其实就是根元素 =。=，因为sub里就一个div）
-                <div data-v-449162b3 class="communication-sub one">父组件的值</div>
+                // 页面中生成的子组件标签。这次type="div"属性并不是绑在sub根元素上，而是我们具体指定的元素上（不过这里指定的div其实就是根元素 =。=，因为sub里就一个div）
+                <div data-v-449162b3 type="div" class="communication-sub one">父组件的值</div>
 
         2. attrs、listeners
             
@@ -6815,25 +7065,26 @@
                 // communication-sub.vue
                 ···
                 <div class="communication-sub">
-                    <input v-bind="$attrs" v-model="title"></input> // $attrs等于dataProps，获取具体属性 $attrs.title
+                    <input v-bind="$attrs" v-model="title"></input> // $attrs等于dataProps，获取具体属性 $attrs.xxx (注意，title并不是Porps里的特性)； 这里v-model="title" == :title="title"
                 </div>
                 ···
                 export default {
                     inheritAttrs: false
                 }
             
-            结果：
-                // 虽然子组件中开启 inheriAttrs，但type属性依旧成功绑定到 input 元素上，而没有绑到根元素div上，同时不再需要 Props声明 data赋值
+            实际渲染出的结果：
+                // 虽然子组件中关闭了 inheriAttrs，但Props声明 并data赋值，而type属性依旧成功绑定到 input 元素上，而没有绑到根元素div上， 
                 <div class="communication-sub input">
                     <input type="text" placeholder="请输入内容" title="我是 communication 的值">
                 </div>
                 // class 和 style 属性不受 inheritAttrs 影响，所以依然可以绑在 div上
                 // $attrs 则是将没有被组件内部 Props 声明的传值（也叫非 Props 特性）收集起来的一个对象，再通过 v-bind 将其绑定在指定元素上。
+                // 这也是 Element 等组件库采用的策略。
                 // 这里为 type placeholder title 指定的元素是 sub中 input ，所以最后绑在 input上
             
             $attrs 可以将非Props属性绑定到 指定 元素上，但是不会与该元素原有属性发生合并或替换，而以原有属性为准
 
-            假如将上述 input 的 type 默认设置为 password。
+            假如在上述communication-sub.vue中 input 里 添加 type="password"
                 <input v-bind="$attrs" v-model="title" type="password"></input>
             则不会采用 $attrs 中的 type: 'text'，将以 password 为准，所以如果需要默认值的属性，建议不要用这种方式。
 
@@ -6858,83 +7109,83 @@
 
                 // communication.vue
                 <template>
-                        <div class="communication">
-                            ------------------------------------.------------------------------------
-                            <p>me, commuication</p>
-                            <input type="text" :placeholder="dataProps.title" v-model="dataProps.title">
-                            <communication-sub 
-                                v-bind="dataProps" 
-                                @click="onCommunicationClick">
-                            </communication-sub>
-                            ------------------------------------.------------------------------------
-                        </div>
-                    </template>
-                    <script>
-                    import communicationSub from './communication-sub.vue'
-                    export default {
-                        name: "communication",
-                        data() {
-                            return {
-                                dataProps: {
-                                    title: "value/communication"
-                                }
-                            }
-                        },
-                        components: {
-                            communicationSub
-                        },
-                        methods: {
-                            onCommunicationClick() {
-                                this.dataProps.title='me, vaule after click'
+                    <div class="communication">
+                        ------------------------------------.------------------------------------
+                        <p>me, commuication</p>
+                        <input type="text" :placeholder="dataProps.title" v-model="dataProps.title">
+                        <communication-sub 
+                            v-bind="dataProps" 
+                            @click="onCommunicationClick">
+                        </communication-sub>
+                        ------------------------------------.------------------------------------
+                    </div>
+                </template>
+                <script>
+                import communicationSub from './communication-sub.vue'
+                export default {
+                    name: "communication",
+                    data() {
+                        return {
+                            dataProps: {
+                                title: "value/communication"
                             }
                         }
+                    },
+                    components: {
+                        communicationSub
+                    },
+                    methods: {
+                        onCommunicationClick() {
+                            this.dataProps.title='me, vaule after click'
+                        }
                     }
-                    </script>
+                }
+                </script>
                     
                 // communication-sub.vue
                 <template>
-                        <div class="communication-sub">
-                            ------------------------------------..------------------------------------
-                            <p>me, commuication-sub</p>
-                            <input v-bind:placeholder="$attrs.title" />
-                            <communication-min-sub v-on="$listeners"></communication-min-sub>
-                            ------------------------------------..------------------------------------
-                        </div>    
-                    </template>
-                    
-                    <script>
-                    import CommunicationMinSub from './communication-min-sub'
-                    export default {
-                        name: "communication-sub",
-                        inheritAttrs: false,
-                        components: {
-                            CommunicationMinSub
-                        }
+                    <div class="communication-sub">
+                        ------------------------------------..------------------------------------
+                        <p>me, commuication-sub</p>
+                        <input v-bind:placeholder="$attrs.title" />
+                        <communication-min-sub v-on="$listeners"></communication-min-sub>
+                        ------------------------------------..------------------------------------
+                    </div>    
+                </template>
+                
+                <script>
+                import CommunicationMinSub from './communication-min-sub'
+                export default {
+                    name: "communication-sub",
+                    inheritAttrs: false,
+                    components: {
+                        CommunicationMinSub
                     }
-                    </script>
+                }
+                </script>
                     
                     
                 // communication-min-sub.vue
                 <template>
-                        <div class="commuication-min-sub">
-                            ------------------------------------...------------------------------------
-                            <p>me, commuication-min-sub</p>
-                            <button v-on="$listeners">click</button>
-                            <br>
-                            ------------------------------------...------------------------------------
-                        </div>
-                    </template>
-                    <script>
-                    export default {
-                        name: "commuication-min-sub",
-                        inheritAttrs: false
-                    }
-                    </script>
+                    <div class="commuication-min-sub">
+                        ------------------------------------...------------------------------------
+                        <p>me, commuication-min-sub</p>
+                        <button v-on="$listeners">click</button>
+                        <br>
+                        ------------------------------------...------------------------------------
+                    </div>
+                </template>
+                <script>
+                export default {
+                    name: "commuication-min-sub",
+                    inheritAttrs: false
+                }
+                </script>
                     
                 祖组件input的值和dataProps通过v-model绑定，dataProps并通过$attrs.title传递到父组件的input上，并且不需要 props和data()    
                 孙子组件通过$listeners将click的事件绑定到父组件在祖组件中使用的标签上@click="onCommunicationClick"，并调用祖组件中定义的方法
                 父组件也可以在自己的Vue里的input上设置v-on="$listeners"，绑定到自己的标签上的处理函数，然后在祖组件中定义该处理函数
-                但父和孙的$listeners 调用会相互触发，(可能因为都绑在父组件标签上)
+                但父和孙的$listeners 调用会相互触发，(可能因为触发事件 @xx 都绑在祖组件中的父组件标签上)
 
 
             $attrs实质就是：
@@ -6993,11 +7244,6 @@
                 }
             }
             </script>
-            <style>
-            div.communication {
-                border: 1px solid black
-            }
-            </style>
 
             // communication-sub.vue
             <template>
@@ -7030,12 +7276,6 @@
                 }
             }
             </script>
-            
-            <style>
-            div.communication-sub {
-                border: 1px solid black
-            }
-            </style>
 
             // communication-min-sub.vue
             <template>
@@ -7051,17 +7291,11 @@
                 inject: ['onCommunicationClick'] // inject接受祖组件方法
             }
             </script>
-            
-            <style>
-            div.communication-min-sub {
-                border: 1px solid black
-            }
-            </style>
 
         4. ref、parent、children
             父组件访问子组件
             · ref
-                获取元素的DOM对象和子组件实例，DOM加载后
+                获取元素的DOM对象和子组件实例，DOM加载后使用
                 普通DOM元素上，引用指向的就是DOM元素
                 子组件上，引用指向组件实例
                 <input type="text" v-model="dataProps.title" ref="input">
@@ -7073,8 +7307,7 @@
                 }
                 // 这里只是举一个栗子，实际项目中的需求，最好通过 class 的方式，尽量减少 Dom 操作。
 
-                父元素状态改变，需要子组件进行http请求更新，通常
-                通过Props将状态传递给子组件
+                父元素状态改变，需要子组件进行http请求更新，通常通过Props将状态传递给子组件
                 子组件进行watch检测，如变更，进行操作。
                 这种时候可以使用ref
                 <child ref="child"></child>
@@ -7102,12 +7335,28 @@
                 </script>
                 ref、parent、children 它们几个的一个缺点就是无法处理跨级组件和兄弟组件
 
+            ref 被用来给元素或子组件注册引用信息。引用信息将会注册在父组件的 $refs 对象上。如果在普通的 DOM 元素上使用，引用指向的就是 DOM 元素；如果用在子组件上，引用就指向组件实例：
+            在上面的例子中，input的引用信息为input1 ，$refs 是所有注册过的ref的一个集合，
+
+            console.log(this.$refs.input1)//<input type="text" id="input1">
+            console.log(document.getElementById('input1'))//<input type="text" id="input1">
+
+            这两种方法获得的都是Dom节点，而$refs相对document.getElementById的方法，会减少获取dom节点的消耗。
+
+            利用ref在子组件上注册引用，该引用信息保存在父组件的 $refs 对象上，父组件通过 this.$refs['注册信息'].func() 可以调用子组件的方法
+            
+            Vue文档原话：
+                尽管有Props和事件，但仍需要在js中直接访问 子组件，为此可以使用ref，为子组件指定一个引用ID
+                当ref和v-for一起使用时，获取到的引用会是一个数组，包含和循环数据源对应的子组件
+                $refs只在组件渲染完成后才填充，并且他是非响应式的，它仅仅是一个直接操作子组件的应急方案--应当避免在模板或计算属性中使用
+
+
         5. emit、on、off
             $emit 和 $on都是组件自身的方法，$on 可以监听 $emit 派发的事件，$off 则用来取消事件监听。
             // 父组件
             <template>
                 <button-component @clickbutton="clickButton"></button-component>
-                // 在父组件利用 v-on监听
+                // 在父组件中的子组件上利用 v-on监听父组件定义的方法
             </template>
             <script>
                 export default {
@@ -7124,12 +7373,12 @@
             <script>
                 export default {
                     methods: {
-                        handleClick() {
+                        handleClick() { // 点击子组件的button 触发子组件定义的事件handleClick，在handleClick中利用$emit调用监听的父组件的方法
                             this.$emit('clickButton'); // 触发emit，调用父组件中的方法
                         }
                     },
                     mounted() {
-                        this.$on('clickButton',(...arr) => {
+                        this.$on('clickButton',(...arr) => { // 也可以自己监听 $emit，虽然没什么用···
                             console.log(...arr);
                         })
                     }
@@ -7174,7 +7423,7 @@
             import communicationSub from './communication-sub.vue'
             export default {
                 name: "communication",
-                created() { // 监听子组件触发的不bus事件
+                created() { // 监听子组件触发的 Bus事件
                     this.$bus.$on('busClick',(data) => {
                         this.dataProps.title = data;
                     });
@@ -7213,6 +7462,8 @@
                 }
             }
             </script>
+
+            子组件通过this.$bus.$emit('func',value)向父组件监听'func'的this.$bus.$on('func')传value，并执行后续操作。
 
             需要在许多页面都做 $on 监听的操作。将这些操作整合到一起：
             // 新建一个 eventBus.js
@@ -7253,11 +7504,74 @@
             $broadcast 向下级广播
 
         8. Vuex
+            是Vue中为组件通信而进行的统一的状态管理。
             Vuex 是一个专为 Vue.js 应用程序开发的状态管理模式。它采用集中式存储管理应用的所有组件的状态，
             并以相应的规则保证状态以一种可预测的方式发生变化。--- 官方文档
 
             Vuex 的核心是单向数据流，并以相应规则保证所有的状态管理都可追踪、可预测。
             如果你的项目比较小，状态管理比较简单，完全没有必要使用 Vuex
+
+            store.js中 保存组件间通信的状态和操作状态的方法：
+                import Vue from 'vue'
+                import Vuex from 'vuex'
+
+                Vue.use(Vuex) // 引用vuex
+
+                export default new Vuex.Store({
+                    state: {
+                        count: 0 // 各组件要改变的状态
+                    },
+                    mutations: { // 组件改变上述状态的方法集
+                        increase () {
+                            this.state.count++
+                        }
+                    },
+                    actions: {
+
+                    }
+                })
+
+            组件页面通过 store.state.xx获取Vue中的值：
+                <template>
+                    <div class="about">
+                        <h1>This is an about page</h1>
+                        <p>{{msg}}</p>
+                    </div>
+                </template>
+
+                <script>
+                import store from '@/store'
+                export default {
+                    name: 'about',
+                    store,
+                    data () {
+                        return {
+                            msg: store.state.count // 获取Vuex中的状态
+                        }
+                    }
+                }
+                </script>
+
+            组件中通过 stroe.commit()调用Vuex中的方法：
+                <script>
+                    import store from '@/store' // 引入store
+                    export default {
+                        name: 'Info', // 缩进两个空格！！！ string用单引号
+                        store,
+                        mounted () { // vue生命周期，组件挂载完执行该方法
+                            window.vue = this
+                        },
+                        methods: {
+                            add () {
+                                console.log('add Event from Info!')
+                                debugger // 暂停进入debug模式
+                                store.commit('increase') // 各组件通过commit向 中央管理store（vuex） 提交申请，利用 increase方法改变 state里的状态
+                            }
+                        }
+                    }
+                </script>
+
+
 
         总结：
             子组件触达父组件的方式：Props、$parent、$attrs、$listeners、provide 和 inject、$dispatch
@@ -7519,52 +7833,165 @@
 　　 一般来说，如果脚本之间没有依赖关系，就使用async属性，如果脚本之间有依赖关系，就使用defer属性。如果同时使用async和defer属性，
     后者不起作用，浏览器行为由async属性决定。
 
-<Q&A 272> CSS3 transform
 
-    CSStransform属性允许你旋转，缩放，倾斜或平移给定元素。这是通过修改CSS视觉格式化模型的坐标空间来实现的。
+<Q&A 272> css可替换元素
 
-    只能转换由盒子模型定位的元素。根据经验，如果元素具有display: block，则由盒模型定位元素。
+        典型的可替换元素有：
+            <iframe>
+            <video>
+            <embed>
+            <img>
+        有些元素仅在特定情况下被作为可替换元素处理，例如：
+            <option>
+            <audio>
+            <canvas>
+            <object>
+            <applet>
+        HTML 规范也说了 <input> 元素可替换，因为 "image" 类型的 <input> 元素就像<img>一样被替换。但是其他形式的控制元素，包括其他类型的 <input> 元素，被明确地列为非可替换元素
 
-    transform属性可以指定为关键字值none 或一个或多个<transform-function>值。
+<Q&A 273> css可继承元素
 
-<Q&A 273> translate和position：relative的区别： 
+    一、无继承性的属性
+            1、display：规定元素应该生成的框的类型
+            2、文本属性：
+            vertical-align：垂直文本对齐
+            text-decoration：规定添加到文本的装饰
+            text-shadow：文本阴影效果
+            white-space：空白符的处理
+            unicode-bidi：设置文本的方向
+            3、盒子模型的属性：width、height、margin 、border、padding.
+            4、背景属性：background
+            5、定位属性：float、clear、position、top、right、bottom、left、min-width、min-height、max-width、max-height、overflow、clip、z-index.
+            6、生成内容属性：content、counter-reset、counter-increment
+            7、轮廓样式属性：outline-style、outline-width、outline-color、outline
+            8、页面样式属性：size、page-break-before、page-break-after
+            9、声音样式属性：pause-before、pause-after、pause、cue-before、cue-after、cue、play-during
 
-    相同点：
-        两者都是相对于本身移动位置 
-    区别： 
-        1、当元素原来已经有position:absolute的时候，这时候你想相对于本身移动，可以使用translate 
-        2、做动画的时候translate更适合，不会引起页面的重排和重绘 
-        3、关于transform类的，可以使用GPU加速，提高浏览器的性能？ 
-    总之：transform更适用于动画
+    二、有继承性的属性
+            1、字体系列属性
+                font：组合字体
+                font-family：规定元素的字体系列
+                font-weight：设置字体的粗细
+                font-size：设置字体的尺寸
+                font-style：定义字体的风格
+                font-variant：设置小型大写字母的字体显示文本，这意味着所有的小写字母均会被转换为大写，但是所有使用小型大写字体的字母与其余文本相比，其字体尺寸更小。
+                font-stretch：对当前的 font-family 进行伸缩变形。所有主流浏览器都不支持。
+                font-size-adjust：为某个元素规定一个 aspect 值，这样就可以保持首选字体的 x-height。
+            2、文本系列属性
+                text-indent：文本缩进
+                text-align：文本水平对齐
+                line-height：行高
+                word-spacing：增加或减少单词间的空白（即字间隔）
+                letter-spacing：增加或减少字符间的空白（字符间距）
+                text-transform：控制文本大小写
+                direction：规定文本的书写方向
+                color：文本颜色
+            3、元素可见性：visibility
+            4、表格布局属性：caption-side、border-collapse、border-spacing、empty-cells、table-layout
+            5、列表布局属性：list-style-type、list-style-image、list-style-position、list-style
+            6、生成内容属性：quotes
+            7、光标属性：cursor
+            8、页面样式属性：page、page-break-inside、windows、orphans
+            9、声音样式属性：speak、speak-punctuation、speak-numeral、speak-header、speech-rate、volume、voice-family、pitch、pitch-range、stress、richness、、azimuth、elevation
+    
+    三、所有元素可以继承的属性
+            1、元素可见性：visibility
+            2、光标属性：cursor
+             
+    四、内联元素可以继承的属性
+            1、字体系列属性
+            2、除text-indent、text-align之外的文本系列属性
+             
+    五、块级元素可以继承的属性
+            1、text-indent、text-align
 
-<Q&A 274> CSS 用 position: absolute 与 transform 的区别
+<Q&A 274> css层叠顺序
 
-    (1) 绝对定位元素的定位基准点是其有定位元素的祖先元素;
-    (2) translate要做偏移，是相对于自身的中心点而言，如果用百分比做单位，参考值就是本身元素的宽度。
+        什么选择器在层叠中胜出取决于三个因素（这些都是按重量级顺序排列的——前面的的一种会否决后一种）：
+            重要性（Importance）
+            专用性（Specificity）
+            源代码次序（Source order）
+            
+        一个特别的语法可以让一条规则总是优先于其他规则：!important。
 
-    负margin水平垂直居中
-        .center {
-                position:absolute;
-                top:50%;
-                left:50%;
-                width:200px;
-                height:200px;
-                margin-top:-200/2px;
-                margin-left:-200/2px;
-        }
+        CSS2.1 层叠顺序：层叠上下文background/border -- 负z-index -- block块状水平盒子 -- float浮动盒子 -- inline/inline-block水平盒子 -- z-index:auto或0 -- 正z-index
 
-    transform 水平垂直居中
-        .center {
-                position:relative;
-                    top:50%;
-                    left:50%;
-                    width:200px;
-                    height:200px;
-                    background:red;
-                    transform:translate(-50%,-50%);
-                    transform-origin:50% 50%;
-        }
+            · 位于最低水平的border/background指的是层叠上下文元素的边框和背景色。每一个层叠顺序规则适用于一个完整的层叠上下文元素。
+            · inline-block和inline水平元素是同等level级别。
+            · z-index:0实际上和z-index:auto单纯从层叠水平上看，是可以看成是一样的。实际上，两者在层叠上下文领域有着根本性的差异。
+            · border/background一般为装饰属性，而浮动和块状元素一般用作布局，而内联元素都是内容。所以内联元素层级要高
+            · 谁大谁上：当具有明显的层叠水平标示的时候，如识别的z-indx值，在同一个层叠上下文领域，层叠水平值大的那一个覆盖小的那一个。
+            · 后来居上：当元素的层叠水平一致、层叠顺序相同的时候，在DOM流中处于后面的元素会覆盖前面的元素。
+        
+        层叠上下文元素有如下特性：
 
+            层叠上下文的层叠水平要比普通元素高；
+            层叠上下文可以阻断元素的混合模式；
+            层叠上下文可以嵌套，内部层叠上下文及其所有子元素均受制于外部的层叠上下文。
+            每个层叠上下文和兄弟元素独立，也就是当进行层叠变化或渲染的时候，只需要考虑后代元素。
+            每个层叠上下文是自成体系的，当元素发生层叠的时候，整个元素被认为是在父层叠上下文的层叠顺序中。
+        
+        层级上下文创建：
+            · 页面根元素天生具有层叠上下文，称之为“根层叠上下文”。
+
+                    指的是页面根元素，也就是滚动条的默认的始作俑者<html>元素。这就是为什么，绝对定位元素在left/top等值定位的时候，如果没有其他定位元素限制，会相对浏览器窗口定位的原因。
+
+            · z-index值为数值的定位元素的传统层叠上下文。
+
+                    对于包含有position:relative/position:absolute的定位元素，以及FireFox/IE浏览器（不包括Chrome等webkit内核浏览器）（目前，也就是2016年初是这样）下含有position:fixed声明的定位元素，
+                    当其z-index值不是auto的时候，会创建层叠上下文。
+
+                    IE6/IE7浏览器有个bug，就是z-index:auto的定位元素也会创建层叠上下文。
+
+                    在过去，position:fixed和relative/absolute在层叠上下文这一块是一路货色，都是需要z-index为数值才行。但是，不知道什么时候起，Chrome等webkit内核浏览器，position:fixed元素天然层叠上下文元素，无需z-index为数值。
+
+            · 其他CSS3属性。
+
+                    CSS3对层叠上下文的影响。
+
+                        1. z-index值不为auto的flex项(父元素display:flex|inline-flex).
+
+                            要满足两个条件才能形成层叠上下文：条件1是父级需要是display:flex或者display:inline-flex水平，条件2是子元素的z-index不是auto，必须是数值。
+                            此时，这个子元素为层叠上下文元素，没错，注意了，是子元素，不是flex父级元素。
+
+                            在CSS2.1时代，z-index属性必须和定位元素一起使用才有作用，但是，在CSS3的世界里，非定位元素也能和z-index愉快地搞基。
+
+                        2. 元素的opacity值不是1.
+
+                            opacity的值不是1的时候，是具有层叠上下文的，层叠顺序是z-index:auto级别，跟没有z-index值的absolute绝对定位元素是平起平坐的。
+
+                        4. 元素的transform值不是none.
+                        5. 元素mix-blend-mode值不是normal.
+                        6. 元素的filter值不是none.
+
+                            此处说的filter是CSS3中规范的滤镜，不是旧IE时代私有的那些，虽然目的类似。
+
+                        7. 元素的isolation值是isolate.
+
+                            isolation:isolate这个声明是mix-blend-mode应运而生的。默认情况下，mix-blend-mode会混合z轴所有层叠在下面的元素，
+                            要是我们不希望某个层叠的元素参与混合怎么办呢？就是使用isolation:isolate。
+
+                        8. will-change指定的属性值为上面任意一个。
+                        9. 元素的-webkit-overflow-scrolling设为touch.
+
+        层叠上下文与层叠顺序：
+
+                一旦普通元素具有了层叠上下文，其层叠顺序就会变高。
+
+                如果层叠上下文元素不依赖z-index数值，则其层叠顺序是z-index:auto可看成z:index:0级别；
+                如果层叠上下文元素依赖z-index数值，则其层叠顺序由z-index值决定。
+
+                层叠顺序：层叠上下文background/border -- 负z-index -- block块状水平盒子 -- float浮动盒子 -- inline/inline-block水平盒子 -- z-index:auto或看成z-index=0 不依赖z-index的层叠上下文 -- 正z-index
+
+                定位元素会层叠在普通元素的上面？
+                其根本原因就在于，元素一旦成为定位元素，其z-index就会自动生效，此时其z-index就是默认的auto，也就是0级别，根据上面的层叠顺序表，就会覆盖inline或block或float元素。
+
+                z-index值与层叠顺序
+                如果元素支持z-index值，则层叠顺序就要好理解些了，比较数值大小，本质上是应用的“谁大谁上”的准则。在以前，我们只需要关心定位元素的z-index就好，
+                但是，在CSS3时代，flex子项也支持z-index，使得我们面对的情况比以前要负复杂。然而，好的是，规则都是一样的，对于z-index的使用和表现也是如此，套用上面的7阶层叠顺序表就可以了。
+
+                多数常见，z-index根本就没有出现的必要。知道了内联元素的层叠水平比块状元素高，于是，某条线你想覆盖上去的时候，需要设置position:relative吗？不需要，inline-block化就可以。
+                因为IE6/IE7 position:relative会创建层叠上下文，很烦的。
 
 <Q&A 275> 盒子模型
 
@@ -7653,8 +8080,24 @@
     如果 'margin-left' 跟 'margin-right' 都为 0 ，则根据 'left' ，'width' 和 'right' 的值是否是 'auto' 来计算。 如果 一个方向值 ，'width' 的值是 'auto'，
     而 '另一个一个方向值' 不是，则宽度使用 shrink-to-fit 算法计算。如果一个值为**'auto'**而另外两个值不算，则该值使用 shrink-to-fit 来计算。
 
+<Q&A 276> 怪异盒子
 
-<Q&A 277> 传统盒子布局实现 水平垂直居中
+    在标准盒模型中：盒子占位宽度width = width + 2margin + 2padding + 2*border,高度与之一样。    
+    
+    盒子真正的宽度：width = width + 2padding + 2border。 margin不算！margin可以改变盒子占位的大小，但是盒子的宽高并没有改变，而是位置的改变！
+
+    根据 W3C 的规范，元素内容占据的空间是由 width 属性设置的，而内容周围的 padding 和 border 值是另外计算的。
+    不幸的是，IE5.X 和 6 在怪异模式中使用自己的非标准模型。这些浏览器的 width 属性不是内容的宽度，而是内容、内边距和边框的宽度的总和。
+    
+    ie 盒子模型的 content 部分包含了 border 和 pading
+
+    要让网页按标准盒模型去解析，则需要加上 doctype声明，否则不同的浏览器会按照自己的标准去解析。
+	box-sizing
+	box-sizing 属性允许你以某种方式定义某些元素，以适应指定区域。
+    例如，假如您需要并排放置两个带边框的框，可通过将 box-sizing 设置为 "border-box"。这可令浏览器呈现出带有指定宽度和高度的框，并把边框和内边距放入框中
+
+    box-sizing类似于ie盒模型，它会把内边距和边框包含在width内。在实际工作中，我们设置一个固定宽度的盒子，但当给它设置padding、border之后，它的真正宽度就会改变。
+    这时box-sizing就派上用途了。它会自动调整内容的宽度，保证盒子的真正宽度还是我们设置的宽度。
 
 <Q&A 277> Flex布局
 
@@ -7850,53 +8293,1131 @@
         align-self: 设置单元格内容的垂直位置（上中下），跟align-items属性的用法完全一致，也是只作用于单个项目。
         place-self属性是align-self属性和justify-self属性的合并简写形式。
 
+<Q&A 279> CSS 流体特性和BFC特性下多栏自适应布局 .
 
+    流体特性：
+            块状水平元素，如div元素（下同），在默认情况下（非浮动、绝对定位等），水平方向会自动填满外部的容器；
+            如果有margin-left/margin-right, padding-left/padding-right, border-left-width/border-right-width等，实际内容区域会响应变窄。
 
-<Q&A 279> css层叠顺序
+    BFC元素特性表现原则就是，内部子元素再怎么翻江倒海，翻云覆雨都不会影响外部的元素。所以，避免margin穿透啊，清除浮动什么的也好理解了。
 
-    什么选择器在层叠中胜出取决于三个因素（这些都是按重量级顺序排列的——前面的的一种会否决后一种）：
-        重要性（Importance）
-        专用性（Specificity）
-        源代码次序（Source order）
+        什么时候会触发BFC呢？常见的如下：
+
+                    · float的值不为none。
+                    · overflow的值为auto,scroll或hidden。
+                    · display的值为table-cell, table-caption, inline-block，Flex中的任何一个。
+                    · position的值不为relative和static。
+
+            BFC特性很多，而我们这里，只关心一个，和float元素做相邻兄弟时候的表现。
+            左边浮动元素，右边 overflow: hidden 实现BFC
+            普通流体元素BFC(overflow: hidden)后，为了和左边浮动元素不产生任何交集，顺着浮动边缘形成自己的封闭上下文。
+            这样BFC保留了流体特性，反映在布局上就是自动填满除去浮动内容以外的剩余空间。
+
+            这时BFC要想和左边浮动元素拉开距离，margin要设置的够大，大于左边浮动元素宽度。但完全没有必要对BFC元素设置margin, 因为又回到了流体布局。
+            可以使用左边浮动元素的margin-right或者padding-right轻松实现间距效果。
+            这样与左边浮动元素的宽度是多少没有任何关系。不仅如此，我们还可以使用BFC元素的padding-left撑开间距
+
+        自适应布局：
+            .l { float: left; }
+            .ovh { overflow: hidden; }
+            的自适应固定搭配。再配合zxx.lib.cssCSS样式库的margin和padding家族，快速布局可谓所向披靡。
+
+        BFC自适应布局优势：
+
+                · 自适应内容由于封闭，更健壮，容错性强。比方说，内部clear:both不会与兄弟float产生矛盾。
+                    而纯流体布局，clear:both会让后面内容无法和float元素在一个水平上，产生布局问题。
+
+                · 自适应内容自动填满浮动以为区域，无需关心浮动元素宽度，可以整站大规模应用。
+                    而纯流体布局，需要大小不确定的margin/padding等值撑开合适间距，无法CSS组件化。
+
+                · CSS代码就是非常简单的：
+
+                            .float-left {
+                                float: left; margin-right: 20px; 
+                            }
+                            .bfc-content {
+                                overflow: hidden; background-color: #beceeb;
+                            }
+        由于绝大多数的触发BFC的属性自身有一些古怪的特性，所以，实际操作的时候，能兼顾流体特性和BFC特性来实现无敌自适应布局的属性并不多。
+                
+                · float:left 浮动元素本身BFC化，然而浮动元素有破坏性和包裹性，失去了元素本身的流体自适应性，因此，无法用来实现自动填满容器的自适应布局。
+                  不过，其因兼容性还算良好，与堆积木这种现实认知匹配，上手简单，因此在旧时代被大肆使用，也就是常说的“浮动布局”，也算阴差阳错开创了自己的一套布局。
+
+                · position:absolute 这个脱离文档流有些严重
+                
+                · overflow:hidden  不像浮动和绝对定位。也就是溢出剪裁什么的，本身还是个很普通的元素。因此，块状元素的流体特性保存相当完好，附上BFC的独立区域特性，
+                    就跟清除浮动：.clearfix { overflow: hidden; _zoom: 1; }一样。由于很多场景我们是不能overflow:hidden的，
+                    因此，无法作为一个通用CSS类整站大规模使用。因此，float + overflow 的自适应布局，我们可以在局部（你确定不会有什么被剪裁的情况下）很happy地使用。
+
+                · display:inline-block会让元素尺寸包裹收缩，完全就不是我们想要的block水平的流动特性。
+                  IE6/IE7浏览器下，block水平的元素设置display:inline-block元素还是block水平，也就是还是会自适应容器的可用宽度显示。
+                  即BFC特性加身，又流体特性保留。
+                        .float-left {
+                            float: left;
+                        }
+                        .bfc-content {
+                            display: inline-block;
+                        }
+                    当然，*zoom: 1也是类似效果，不过只适用于低级的IE浏览器，如IE7~
+
+                · display:table-cell 让元素表现得像单元格一样，IE8+以上浏览器才支持。跟display:inline-block一样，会跟随内部元素的宽度显示，  
+                  但是，单元格有个非常神奇的特性，就是你宽度值设置地再大，大到西伯利亚，实际宽度也不会超过表格容器的宽度。
+                  如果我们把display:table-cell这个BFC元素宽度设置很大，比方说3000像素。那其实就跟block水平元素自动适应容器空间效果一模一样了。
+                  但是，还是有两点制约，一是IE8+以上浏览器兼容，有些苦逼的团队还要管IE6；二是应付连续英文字符换行有些吃力（可以嵌套table-layout:fixed解决）。
+                  适用的场景要比overflow:hidden广
+
+        BFC声明家族大致过了一遍，能担任自适应布局重任的也就是：
+
+                    overflow:auto/hidden IE7+
+                    display:inline-block IE6/IE7
+                    display:table-cell IE8+
+
+                    由于overflow有剪裁和出现滚动条等隐患，不适合作为整站通用类，于是，最后，类似清除浮动的通用类语句：
+
+                        .clearfix {
+                            *zoom: 1;
+                        }
+                        .clearfix:after {
+                            content: ''; display: table; clear: both;
+                        }
+                    两栏或多栏自适应布局的通用类语句是（block水平标签，需配合浮动）：
+
+                        .cell {
+                            display: table-cell; width: 9999px;
+                            *display: inline-block; *width: auto;
+                        }
+                    这就是zxx.lib.cssCSS样式库中.cell的由来！
+
+                    当然，由于和浮动元素合作，清除浮动还是要的，于是，就有了.fix + .l/.r + .cell的无敌组合，可以多栏，也可以无限嵌套。
+
+                    如果是局部，且确认安全；或有连续英文字符换行的隐患，你也可以使用.fix + .l/.r + .ovh的无敌组合，可以多栏，也可以无限嵌套。
+
+<Q&A 280> css 实现居中
+
+    1、水平居中
+
+        水平居中可分为行内元素水平居中和块级元素水平居中
+
+        1.1 行内元素水平居中
+            这里行内元素是指文本text、图像img、按钮超链接等，只需给父元素设置text-align:center即可实现。
+
+            .center{
+                    text-align:center;
+            }
+            <div class="center">水平居中</div>
+
+        1.2 块级元素水平居中
+            · 定宽块级元素水平居中
+                只需给需要居中的块级元素加margin:0 auto即可，但这里需要注意的是，这里块状元素的宽度width值一定要有
+
+                .center{
+                    width:200px;
+                    margin:0 auto;
+                    border:1px solid red;
+                }
+                <div class="center">水平居中</div>
+
+            · 不定宽块级元素水平居中
+                不定宽，即块级元素宽度不固定
+
+                方法1：设置table
+
+                    通过给要居中显示的元素，设置display:table，然后设置margin:0 auto来实现
+
+                    .center{
+                        display:table;
+                        margin:0 auto;
+                        border:1px solid red;
+                    }
+                    <div class="center">水平居中</div>
+
+                方法2：设置inline-block 多个块状元素
+
+                    子元素设置inline-block，同时父元素设置text-align:center
+
+                    .center{
+                        text-align:center;
+                    }
+                    .inlineblock-div{
+                        display:inline-block;
+                    }
+                    <div class="center">
+                        <div class="inlineblock-div">1</div>
+                        <div class="inlineblock-div">2</div>
+                    </div>
+
+                方法3：设置flex布局
+
+                    只需把要处理的块状元素的父元素设置display:flex,justify-content:center;
+
+                    .center{
+                        display:flex;
+                        justify-content:center;
+                    }
+                    <div class="center">
+                        <div class="flex-div">1</div>
+                        <div class="flex-div">2</div>
+                    </div>
+
+                方法4：position + 负margin；
+                方法5：position + margin：auto；
+                方法6：position + transform；
+
+                注：这里方法4、5、6同下面垂直居中一样的道理，只不过需要把top/bottom改为left/right，在垂直居中部分会详细讲述。
+
+    2、垂直居中
+
+        2.1 单行文本垂直居中
+
+            设置paddingtop=paddingbottom；或
+            设置line-height=height；
+
+        2.2 多行文本垂直居中
+
+            通过设置父元素table，子元素table-cell和vertical-align
+            vertical-align:middle的意思是把元素放在父元素的中部
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <style type="text/css">
+                        .center{
+                            width: 200px;
+                            height: 300px;
+                            display: table;
+                            border: 2px solid blue;
+                        }
+                        .table-div{
+                            didplay: table-cell;
+                            vertical-align: middle;
+                            border: 1px solid red;
+                        }
+                        </style>
+                    </head>
+                    <body>
+                        <div class='center'>
+                            <div class="table-div">多行文本垂直居中</div>
+                        </div>
+                    </body>
+                    </html>
+
+        2.3 块级元素垂直居中
         
-    一个特别的语法可以让一条规则总是优先于其他规则：!important。
+            方法1：flex布局
 
-<Q&A 280> css可替换元素
+                在需要垂直居中的父元素上，设置display:flex和align-items：center
+                要求：父元素必须显示设置height值
+                .center{
+                    width: 200px;
+                    height: 300px;
 
-    典型的可替换元素有：
-        <iframe>
-        <video>
-        <embed>
-        <img>
-    有些元素仅在特定情况下被作为可替换元素处理，例如：
-        <option>
-        <audio>
-        <canvas>
-        <object>
-        <applet>
-    HTML 规范也说了 <input> 元素可替换，因为 "image" 类型的 <input> 元素就像<img>一样被替换。但是其他形式的控制元素，包括其他类型的 <input> 元素，被明确地列为非可替换元素
+                    display: flex;
+                    align-items: center;
 
-<Q&A 281> 
-<Q&A 282> 
-<Q&A 125> 
-<Q&A 125> 
-<Q&A 125> 
-<Q&A 125> 
-<Q&A 125> 
-<Q&A 125> 
-<Q&A 125> 
-<Q&A 125> 
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
-<Q&A 125>
+                    border: 2px solid blue;
+                }
+                <div class='center'>
+                    <div class="table-div">垂直居中</div>
+                </div>
+
+            方法2：利用position和top和负margin（需知宽高）
+
+                1、设置元素为absolute/relative/fixed
+                2、margin=负一半
+
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <style type="text/css">
+                        .parent{
+                            position: relative;
+                            width: 200px;
+                            height: 200px;
+
+                            border: 2px solid blue;
+                        }
+                        .child{
+                            position: absolute;
+                            width: 150px;
+                            height: 200px;
+                            top: 50%;
+                            margin-top: -50px;
+                            line-height: 100px;
+                        }
+                        </style>
+                    </head>
+                    <body>
+                        <div class='parent'>
+                            <div class="child">已知高度垂直居中</div>
+                        </div>
+                    </body>
+                    </html>
+
+            方法3：利用position和top/bottom和margin:auto（注意不是margin:0 auto）
+
+                1、position：absolute/relative/fixed
+                2、top/bottom：0
+                3、margin：auto
+
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <style type="text/css">
+                        .parent{
+                            position: relative;
+                            width: 200px;
+                            height: 200px;
+
+                            border: 2px solid blue;
+                        }
+                        .child{
+                            position: absolute;
+                            width: 150px;
+                            height: 200px;
+                            top: 0;
+                            bottom: 0;
+                            margin: auto;
+                            line-height: 100px;
+                        }
+                        </style>
+                    </head>
+                    <body>
+                        <div class='parent'>
+                            <div class="child">已知高度垂直居中</div>
+                        </div>
+                    </body>
+                    </html>
+
+            方法4：利用position和top和transform
+
+                transform中translate偏移的百分比就是相对于元素自身的尺寸而言的。
+
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <style type="text/css">
+                        .parent{
+                            position: relative;
+                            width: 200px;
+                            height: 200px;
+
+                            border: 2px solid blue;
+                        }
+                        .child{
+                            position: absolute;
+                            width: 150px;
+                            height: 200px;
+                            top: 50%;
+                            transform: translate(0, -50%);
+                            line-height: 100px;
+                        }
+                        </style>
+                    </head>
+                    <body>
+                        <div class='parent'>
+                            <div class="child">已知高度垂直居中</div>
+                        </div>
+                    </body>
+                    </html>
+
+        注：
+            · 上述的块级垂直居中方法，稍加改动，即可成为块级水平居中方法，如top/bottom换成left/right
+            · transform方法，可用于未知元素大小的居中
+
+    3、水平垂直居中
+            方法1：绝对定位+margin:auto
+
+                div{
+                    width: 200px;
+                    height: 200px;
+                    background: green;
+                    
+                    position:absolute;
+                    left:0;
+                    top: 0;
+                    bottom: 0;
+                    right: 0;
+                    margin: auto;
+                }
+            方法2：绝对定位+负margin
+
+                div{
+                    width:200px;
+                    height: 200px;
+                    background:green;
+                    
+                    position: absolute;
+                    left:50%;
+                    top:50%;
+                    margin-left:-100px;
+                    margin-top:-100px;
+                }
+            方法3：绝对定位+transform
+
+                div{
+                    width: 200px;
+                    height: 200px;
+                    background: green;
+                    
+                    position:absolute;
+                    left:50%;    /* 定位父级的50% */
+                    top:50%;
+                    transform: translate(-50%,-50%); /*自己的50% */
+                }
+            方法4：flex布局
+
+            .box{
+                    height:600px;  
+                    
+                    display:flex;
+                    justify-content:center;  //子元素水平居中
+                    align-items:center;      //子元素垂直居中
+                    /* aa只要三句话就可以实现不定宽高水平垂直居中。 */
+                }
+                .box>div{
+                    background: green;
+                    width: 200px;
+                    height: 200px;
+                }
+            方法5：table-cell实现居中
+
+            设置
+            display:table-cell;
+            text-align:center;
+            vertical-align: middle;
+
+
+<Q&A 281> css3 transform translate translation  .
+
+    通过改变坐标空间，CSS transforms 可以在不影响正常文档流的情况下改变作用内容的位置。通过改变坐标空间，CSS transforms 可以在不影响正常文档流的情况下改变作用内容的位置。
+
+    transforms两个主要的属性
+
+        transform-origin
+            指定原点的位置。默认值为元素的中心，可以被移动。很多变形需要用到这个属性，比如旋转，缩放和倾斜，他们都需要一个指定的点作为参数。
+            transform-origin: center;
+            transform-origin: top left;
+        transform
+            指定作用在元素上的变形。取值为空格分隔的一系列变形的列表，他们会像被组合操作请求一样被分别执行。
+            transform: translate(120px, 50%);
+            transform: scale(2, 0.5);
+            transform: scale(0.5) translate(-100%, -100%); 
+
+        CSS transform属性允许你旋转，缩放，倾斜或平移给定元素。这是通过修改CSS视觉格式化模型的坐标空间来实现的。
+
+        只能转换由盒子模型定位的元素。根据经验，如果元素具有display: block，则由盒模型定位元素。
+
+        transform属性可以指定为关键字值none 或一个或多个<transform-function>值。
+
+    · transform提升元素的垂直地位
+
+        我们可能都知道这样一个规则，当遭遇元素margin负值重叠的时候，如果没有static以外的position属性值的话，后面的元素是会覆盖前面的元素的。
+        元素应用了transform属性之后，就会变得应用了position:relative一个尿性，原本应该被覆盖的元素会雄起，变成覆盖其他元素，
+        只要是支持transform元素的浏览器，包括IE9(-ms-), 都会提高普通元素的垂直地位，使其覆盖其他元素而不是被覆盖。
+
+    · transform 限制 position:fixed 的跟随效果
+
+        position:fixed可以让元素不跟随浏览器的滚动条滚动，而且这种跟随效果连它的兄弟们position:relative/absolute都限制不了。
+        但是，真是一物降一物，position:fixed固定效果却被小小的transform给干掉了，直接降级变成position:absolute的蛋疼表现。
+        注意，这个特性表现，目前只在Chrome浏览器/FireFox浏览器下有，IE浏览器，包括IE11, fixed还是fixed的表现。
+
+    · transform改变overflow对absolute元素的限制
+
+        在以前，overflow与absolute之间的限制规范内容大致是这样的：
+
+        absolute绝对定位元素，如果含有overflow不为visible的父级元素，同时，该父级元素以及到该绝对定位元素之间任何嵌套元素都没有position为非static属性的声明，则overflow对该absolute元素不起作用。
+
+        “无论是overflow容器还是嵌套子元素，只要有transform属性，就会hidden溢出的absolute元素。”
+
+    · transform限制absolute的100%宽度大小
+
+        以前，我们设置absolute元素宽度100%, 则都会参照第一个非static值的position祖先元素计算，没有就window. 现在，诸位，需要把transform也考虑在内了。
+
+        结果，无论是IE9+，还是Chrome还是FireFox浏览器，所有绝对定位图片100%宽度，都是相对设置了transform的容器计算了
+
+    · 补充
+
+        在mac safari浏览器下，使用transform: translate3d(0,0,0) 可以避免文字在其他元素transition或animation时候，粗细渲染跟着变化的问题。
+
+        transform属性还会创建层叠上下文，影响元素发生重叠时候的表现
+
+    · CSS 属性 translate 允许你单独指定 transforms 中的平移，并独立于 transform 属性。这可以更好地反映到典型的用户界面用法，并节省了在指定transform 值时必须记住的转换函数的确切顺序。
+            
+            /* Keyword values 表示平移效果没有被应用。*/
+            translate: none;
+
+            /* Single values 一个长度值或百分比表示X轴和Y轴使用一样的值进行二维上的平移。等同于translate() （2D 平移）函数指定单个值。*/
+            translate: 100px;
+            translate: 50%;
+
+            /* Two values 两个长度值或百分比表示在二维上分别按照指定X轴和Y轴的值进行的平移。等同于translate() （2D 平移）函数指定两个值。*/
+            translate: 100px 200px;
+            translate: 50% 105px;
+
+            /* Three values 三个长度值或百分比表示在三维上分别按照指定X轴、Y轴、Z轴的值进行的平移。等同于translate3d() （3D 平移）函数。*/
+            translate: 50% 105px 5rem;
+
+    · translate和position：relative的区别： 
+
+            相同点：
+                两者都是相对于本身移动位置 
+            区别： 
+                1、当元素原来已经有position:absolute的时候，这时候你想相对于本身移动，可以使用translate 
+                2、做动画的时候translate更适合，不会引起页面的重排和重绘 
+                3、关于transform类的，可以使用GPU加速，提高浏览器的性能？ 
+            总之：transform更适用于动画
+
+    · position: absolute 与 transform 的区别
+
+            (1) 绝对定位元素的定位基准点是其有定位元素的祖先元素;
+            (2) translate要做偏移，是相对于自身的中心点而言，如果用百分比做单位，参考值就是本身元素的宽度。
+
+                负margin水平垂直居中
+                    .center {
+                            position:absolute;
+                            top:50%;
+                            left:50%;
+                            width:200px;
+                            height:200px;
+                            margin-top:-200/2px;
+                            margin-left:-200/2px;
+                    }
+
+                transform 水平垂直居中
+                    .center {
+                            position:relative;
+                                top:50%;
+                                left:50%;
+                                width:200px;
+                                height:200px;
+                                background:red;
+                                transform:translate(-50%,-50%);
+                                transform-origin:50% 50%;
+                    }
+
+<Q&A 282> css  animation
+
+        CSS animation 属性是 
+
+            animation-name，
+            animation-duration, 
+            animation-timing-function，
+            animation-delay，
+            animation-iteration-count，
+            animation-direction，
+            animation-fill-mode 和 
+            animation-play-state 属性的一个简写属性形式。
+
+            animation 属性用来指定一组或多组动画，每组之间用逗号相隔。
+
+        每组动画规定的属性如下：
+
+        以下属性出现0次或1次：
+        <single-transition-timing-function>
+            
+            
+        <single-animation-iteration-count>
+            动画播放的次数。该值必须是animation-iteration-count可用的值之一。
+        <single-animation-direction>
+            动画播放的方向。该值必须是animation-direction可用的值之一。
+        <single-animation-fill-mode>
+            确定动画在执行之前和之后这两个阶段应用的样式。该值必须是animation-fill-mode可用的值之一。
+        <single-animation-play-state>
+            确定动画是否正在播放。该值必须是animation-play-state中可用的值之一。
+            
+        animation 的 name 值可能是：none，<custom-ident>， <string>
+        <time> 可能会出现0、1 或 2 次
+        每个动画定义中的属性值的顺序很重要：可以被解析为 <time> 的第一个值被分配给animation-duration， 第二个分配给 animation-delay。
+
+<Q&A 283> css overflow
+
+            /* 默认值。内容不会被修剪，会呈现在元素框之外 */
+            overflow: visible;
+
+            /* 内容会被修剪，并且其余内容不可见 */
+            overflow: hidden;
+
+            /* 内容会被修剪，浏览器会显示滚动条以便查看其余内容 */
+            overflow: scroll;
+
+            /* 由浏览器定夺，如果内容被修剪，就会显示滚动条 */
+            overflow: auto;
+
+            /* 规定从父元素继承overflow属性的值 */
+            overflow: inherit;
+
+<Q&A 284> css 硬件加速
+
+    以下情况会产生新的层叠上下文：
+
+        · 根元素（HTML）
+        · 绝对或相对定位且 z-index 值不为 auto
+        · 一个伸缩项目 Flex Item，且 z-index 值不为 auto，即父元素 display: flex|inline-flex
+        · 元素的 opacity 属性值小于 1
+        · 元素的 transform 属性值不为 none
+        · 元素的 mix-blend-mode 属性值不为 normal
+        · 元素的 filter 属性值不为 normal
+        · 元素的 isolation 属性值为 isolate
+        · position: fixed
+        · will-change 中指定了上述任意属性，即便你没有直接定义这些属性
+        · 元素的 -webkit-overflow-scrolling 属性值为 touch
+
+        按照常理来说，改变元素位置会产生重排，为什么上面图中显示的全是重绘呢？原因是绝对定位会建立一个新的图层，而此图层上只有当前一个元素，多以只会重绘，而不会重排。
+        在同一层中，元素数量少的情况下，重排性能对更好，速度会更快。
+
+        为什么 transform 没有触发 repaint 呢？简而言之，transform 动画由GPU控制，支持硬件加速，并不需要软件方面的渲染。
+
+    硬件加速原理
+
+　　    浏览器接收到页面文档后，会将文档中的标记语言解析为DOM树。DOM树和CSS结合后形成浏览器构建页面的渲染树。
+        渲染树中包含了大量的渲染元素，每一个渲染元素会被分到一个图层中，每个图层又会被加载到GPU形成渲染纹理，
+        而图层在GPU中transform 是不会触发 repaint 的，最终这些使用 transform 的图层都会由独立的合成器进程进行处理。
+
+    浏览器什么时候会创建一个独立的复合图层：
+
+            3D 或者 CSS transform
+            <video> 和 <canvas> 标签
+            CSS filters
+            元素覆盖时，比如使用了 z-index 属性
+
+    3D 和 2D transform 的区别就在于：
+        
+            浏览器在页面渲染前为3D动画创建独立的复合图层，而在运行期间为2D动画创建。
+            动画开始时，生成新的复合图层并加载为GPU的纹理用于初始化 repaint。
+            然后由GPU的复合器操纵整个动画的执行。最后当动画结束时，再次执行 repaint 操作删除复合图层。
+
+    强制GPU渲染
+                
+            并不是所有的CSS属性都能触发GPU的硬件加速（图层在GPU中属性改变不会触发 repaint ），实际上只有少数属性可以
+
+                · transform
+                · opacity
+                · filter
+        　  为了避免 2D transform 动画在开始和结束时发生的 repaint 操作，我们可以硬编码一些样式来解决这个问题：
+
+                .example1 {
+                transform: translateZ(0);
+                }
+
+                .example2 {
+                transform: rotateZ(360deg);
+                }
+            这段代码的作用就是让浏览器执行 3D transform。浏览器通过该样式创建了一个独立图层，图层中的动画则有GPU进行预处理并且触发了硬件加速。
+            
+    使用硬件加速的问题
+                
+            · 内存。如果GPU加载了大量的纹理，那么很容易就会发生内容问题，这一点在移动端浏览器上尤为明显，
+              所以，一定要牢记不要让页面的每个元素都使用硬件加速。
+
+            · 使用GPU渲染会影响字体的抗锯齿效果。这是因为GPU和CPU具有不同的渲染机制。
+              即使最终硬件加速停止了，文本还是会在动画期间显示得很模糊。
+            
+<Q&A 285> 
+
+        XmlHttpRequest只允许请求当前源（域名、协议、端口）的资源，所以AJAX是不允许跨域的。不过 像<script>,<link>,<img>,<iframe>这些标签是允许跨域的，
+        但你并不能修 改这些资源，比如iframe里的内容。
+
+<Q&A 286> MVVM(Model-View-ViewModel)
+
+    源自于经典的 Model–View–Controller（MVC）模式。MVVM 的出现促进了 GUI 前端开发与后端业务逻辑的分离，极大地提高了前端开发效率。
+    MVVM 的核心是 ViewModel 层，它就像是一个中转站（value converter），负责转换 Model 中的数据对象来让数据变得更容易管理和使用，
+    该层向上与视图层进行双向数据绑定，向下与 Model 层通过接口请求进行数据交互，起呈上启下作用。View 层展现的不是 Model 层的数据，
+    而是 ViewModel 的数据，由 ViewModel 负责与 Model 层交互，这就完全解耦了 View 层和 Model 层，这个解耦是至关重要的，它是前后端分离方案实施的最重要一环。
+
+<Q&A 287> jquery axios fetch
+
+        jquery缺点：
+            1.本身是针对MVC的编程,不符合现在前端MVVM的浪潮
+            2.基于原生的XHR开发，XHR本身的架构不清晰。
+            3.JQuery整个项目太大，单纯使用ajax却要引入整个JQuery非常的不合理（采取个性化打包的方案又不能享受CDN服务）
+            4.不符合关注分离（Separation of Concerns）的原则
+            5.配置和调用方式非常混乱，而且基于事件的异步模型不友好。
+
+            · 不符合关注分离（Separation of Concerns）的原则
+            · 配置和调用方式非常混乱
+            · 使用事件机制来跟踪状态变化
+            · 基于事件的异步模型没有现代的 Promise，generator/yield，async/await 友好
+        
+        axios 是一个基于Promise 用于浏览器和 nodejs 的 HTTP 客户端
+        axios是通过promise实现对ajax技术的一种封装，就像jQuery实现ajax封装一样。
+        axios既提供了并发的封装，也没有fetch的各种问题，而且体积也较小
+
+        axios特征：
+            1.从浏览器中创建 XMLHttpRequest
+            2.支持 Promise API
+            3.客户端支持防止CSRF
+            4.提供了一些并发请求的接口（重要，方便了很多的操作）
+            5.从 node.js 创建 http 请求
+            6.拦截请求和响应
+            7.转换请求和响应数据
+            8.取消请求
+            9.自动转换JSON数据
+
+            axios和ajax请求本地json区别：
+                · 浏览器端发起XMLHttpRequests请求
+                · node端发起http请求
+                · 支持Promise API
+                · 监听请求和返回
+                · 转化请求和返回
+                · 取消请求
+                · 自动转换json数据
+                · 客户端支持预防XSRF
+
+        fetch号称是AJAX的替代品，是在ES6出现的，使用了ES6中的promise对象。Fetch是基于promise设计的。
+        Fetch的代码结构比起ajax简单多了，参数有点像jQuery ajax。但是，一定记住fetch不是ajax的进一步封装，而是原生js，没有使用XMLHttpRequest对象。
+            <script>
+                    try {
+                        let response = await fetch(url);
+                        let data = response.json();
+                        console.log(data);
+                    } catch(e) {
+                        console.log("Oops, error", e);
+                    }
+            </script>
+        
+        fetch的优点：
+            1.符合关注分离，没有将输入、输出和用事件来跟踪的状态混杂在一个对象里
+            2.更好更方便的写法
+            3.语法简洁，更加语义化
+            4.基于标准 Promise 实现，支持 async/await
+            5.同构方便，使用 [isomorphic-fetch](https://github.com/matthew-andrews/isomorphic-fetch)
+            6.更加底层，提供的API丰富（request, response）
+            7.脱离了XHR，是ES规范里新的实现方式.
+
+        fetch的缺点:
+            1）fetch只对网络请求报错，对400，500都当做成功的请求，服务器返回 400，500 错误码时并不会 reject，只有网络错误这些导致请求不能完成时，fetch 才会被 reject。
+            2）fetch默认不会带cookie，需要添加配置项： fetch(url, {credentials: 'include'})
+            3）fetch不支持abort，不支持超时控制，使用setTimeout及Promise.reject的实现的超时控制并不能阻止请求过程继续在后台运行，造成了流量的浪费
+            4）fetch没有办法原生监测请求的进度，而XHR可以
+        
+        fetch原生支持率并不高，幸运的是，引入下面这些 polyfill 后可以完美支持 IE8+：
+
+            · 由于 IE8 是 ES3，需要引入 ES5 的 polyfill: es5-shim, es5-sham
+            · 引入 Promise 的 polyfill: es6-promise
+            · 引入 fetch 探测库：fetch-detector
+            · 引入 fetch 的 polyfill: fetch-ie8
+            · 可选：如果你还使用了 jsonp，引入 fetch-jsonp
+            · 可选：开启 Babel 的 runtime 模式，现在就使用 async/await
+
+            <script>
+
+                //fetch API
+                fetch('/api').then(function(response) {
+                    return response.json()
+                }).then(function(data) {
+                    console.log(data)
+                }).catch(function(error) {
+                    console.log('Oops, error: ', error)
+                }); 
+
+                //es6 箭头函数
+                fetch('/api').then(response => response.json())
+                    .then(data => console.log(data))
+                    .catch(error => console.log('Oops, error: ', error))
+
+                // async/await
+                async function() {
+                    try {
+                        let response = await fetch(url);
+                        let data = response.json();
+                        console.log(data);
+                    } catch (error) {
+                        console.log('Oops, error: ', error)
+                    }
+                }
+                //使用 await 后，写代码就更跟同步代码一样。await 后面可以跟 Promise 对象，表示等待 Promise resolve() 才会继续向下执行，
+                //如果 Promise 被 reject() 或抛出异常则会被外面的 try...catch 捕获。
+
+                //基于 XMLHttpRequest 的 AJAX 用 Fetch 改写：
+
+                var options = {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username: 'admin', password: 'root' }),
+                    credentials: 'include' // 携带cookie
+                };
+
+                fetch('/api', options).then(response => response.json())
+                    .then(data => console.log(data))
+                    .catch(error => console.log('Oops, error: ', error))
+            </script>
+
+<Q&A 288> 服务端渲染(Server Side Rendering)、预渲染(Prerending)
+
+    服务端渲染是先向后端服务器请求数据，然后生成完整首屏html返回给浏览器；
+    而客户端渲染是等js代码下载、加载、解析完成后再请求数据渲染，等待的过程页面是什么都没有的，
+    就是用户看到的白屏。就是服务端渲染不需要等待js代码下载完成并请求数据，就可以返回一个已有完整数据的首屏页面。
+
+<Q&A 289> ECMAScript 6 数组的扩展
+
+    Array.from()
+        Array.from方法用于将两类对象转为真正的数组：类似数组的对象（array-like object）和可遍历（iterable）的对象（包括ES6新增的数据结构Set和Map）。
+        常见的类似数组的对象是DOM操作返回的NodeList集合，以及函数内部的arguments对象。Array.from都可以将它们转为真正的数组。
+            // NodeList对象
+            let ps = document.querySelectorAll('p');
+            Array.from(ps).forEach(function (p) {
+            console.log(p);
+            });
+
+            // arguments对象
+            function foo() {
+            var args = Array.from(arguments);
+            // ...
+            }
+        只要是部署了Iterator接口的数据结构，Array.from都能将其转为数组。
+
+        值得提醒的是，扩展运算符（...）也可以将某些数据结构转为数组。
+
+            // arguments对象
+            function foo() {
+            var args = [...arguments];
+            }
+
+            // NodeList对象
+            [...document.querySelectorAll('div')]
+        
+    Array.of()
+        Array.of方法用于将一组值，转换为数组。
+        Array.of(3, 11, 8) // [3,11,8]
+        Array.of(3) // [3]
+        Array.of(3).length // 1
+
+    数组实例的copyWithin()
+        数组实例的copyWithin方法，在当前数组内部，将指定位置的成员复制到其他位置（会覆盖原有成员），然后返回当前数组。也就是说，使用这个方法，会修改当前数组。
+        Array.prototype.copyWithin(target, start = 0, end = this.length)
+
+            target（必需）：从该位置开始替换数据。
+            start（可选）：从该位置开始读取数据，默认为0。如果为负值，表示倒数。
+            end（可选）：到该位置前停止读取数据，默认等于数组长度。如果为负值，表示倒数。
+            这三个参数都应该是数值，如果不是，会自动转为数值。
+
+        [1, 2, 3, 4, 5].copyWithin(0, 3)
+        // [4, 5, 3, 4, 5]
+
+    数组实例的fill()
+        fill方法使用给定值，填充一个数组。
+
+        ['a', 'b', 'c'].fill(7)
+        // [7, 7, 7]
+
+        new Array(3).fill(7)
+        // [7, 7, 7]
+
+<Q&A 290> es6
+
+        解构赋值
+        let [foo] = 1;
+        let [foo] = false;
+        let [foo] = NaN;
+        let [foo] = undefined;
+        let [foo] = null;
+        let [foo] = {};
+        都会报错，因为右边都不具备Iterator接口（转换成对象后 前五个，或本身不具备 {} ）
+
+        对象解构
+        内部机制是先找到同名属性，再赋值给对应的变量
+        let {foo: baz} = {foo: 'aaa', bar:'bbb'}
+        baz // 'aaa'
+
+        var {message: msg = 'defaultValue'} = {}
+        msg // defaultValue
+
+        解构时，右边不是对象，先转对象，undefined和null转不了对象
+        let {toString：s} = 123
+        s === Number.prototype.toString
+
+        function move({x,y} = {x:0,y:0}) { // 要move的参数和 x，y的值都为 undefined 才触发默认
+            return [x,y]
+        }
+        move({}) // [undefined, undefined]
+        move() // [0, 0]
+
+        解构的用途：
+            交换变量值
+            从函数返回多个值
+            函数参数定义
+            提取JSON数据
+            函数参数的默认值
+            遍历Map解构
+
+<Q&A 291> es6 知识点
+
+        0 '' false 为假值
+        null undefined 为空值
+        null == undefined
+        null != false
+
+        NaN != NaN
+        typeof NaN // number
+
+        typeof null // undefined
+        typeof undefined // undefined
+
+        有了let后，不能先使用后声明变量，typeof也会报ReferenceError错，之前不会
+
+        顶层对象属性和全局对象：
+            es5中 顶层对象属性 == 全局变量
+            es6中 浏览器中顶层对象 window ； Node环境中，global对象
+            js中顶层对象和全局对象相关，导致
+                无法再编译时就提示变量未声明，全局变量可能是顶层对象属性动态创造的
+                很容易创建全局对象
+                顶层对象的属性到处都可以读，不利于模块化
+                window有实体含义，浏览器窗口
+
+        es5中
+            浏览器顶层对象 window，Node和web worker没有window
+            浏览器和web worker中self都指向顶层对象，Node没有self
+            Node中顶层对象 global，其他不支持global
+
+            现在似乎优化过了，chrome中通过globalThis可以拿到顶层对象 globalThis === self === window
+
+<Q&A 292> cssRules/rules
+
+    cssRules/rules （内联 + 链接 + 特点：可读可写）
+
+    cssRules/rules 是 CSSStyleSheet 对象的属性
+
+    获取样式的节点对象
+
+        document.getElementsByTagName('link')[0];   //HTMLLinkElement
+        document.getElementsByTagName('style')[0];    //HTMLStyleElement
+
+    · 得到sheet对象 （IE使用link.sheet）
+        var link = document.getElementsByTagName('link')[0];
+        var sheet = link.sheet || link.styleSheet;  //的到CSSStyleSheet对象
+
+    · 对象的属性和方法
+        1. 通过 `CSSRules` 属性(非 IE)和 `rules` 属性(IE),我们可以获得样式表的规则集合列表
+    
+            var sheet = document.styleSheets[0];   //获取CSSStyleSheet对象
+            var rules = sheet.cssRules || sheet.rules;
+
+        2. sheet.deleteRule(index)                //删除是定位置的CSS
+
+        3. sheet.insertRules(rule,index)           //在指定位置添加CSS样式
+
+            sheet.insertRules("body { background-color: red }",10);
+
+<Q&A 293> webpack、gulp、grunt
+
+        如果把工具按类型分可以分为这三类：
+
+            基于任务运行的工具：
+            Grunt、Gulp
+            它们会自动执行指定的任务，就像流水线，把资源放上去然后通过不同插件进行加工，它们包含活跃的社区，丰富的插件，能方便的打造各种工作流。
+
+            基于模块化打包的工具：
+            Browserify、Webpack、rollup.js
+            有过 Node.js 开发经历的应该对模块很熟悉，需要引用组件直接一个 require 就 OK，这类工具就是这个模式，还可以实现按需加载、异步加载模块。
+
+            整合型工具：
+            Yeoman、FIS、jdf、Athena、cooking、weflow
+            使用了多种技术栈实现的脚手架工具，好处是即开即用，缺点就是它们约束了技术选型，并且学习成本相对较高。
+
+        特点与不足
+
+            Grunt
+                Grunt 是老牌的构建工具，特点是配置驱动，你需要做的就是了解各种插件的功能，然后把配置整合到 Gruntfile.js 中
+
+                Grunt 缺点也是配置驱动，当任务非常多的情况下，试图用配置完成所有事简直就是个灾难；再就是它的 I/O 操作也是个弊病，
+                它的每一次任务都需要从磁盘中读取文件，处理完后再写入到磁盘，例如：我想对多个 less 进行预编译、压缩操作，那么 Grunt 的操作就是：
+
+                读取 less 文件 -> 编译成 css -> 存储到磁盘 -> 读取 css -> 压缩处理 -> 存储到磁盘
+
+                这样一来当资源文件较多，任务较复杂的时候性能就是个问题了。
+
+            Gulp
+                Gulp 特点是代码驱动，写任务就和写普通的 Node.js 代码一样
+
+                再一个对文件读取是流式操作（Stream），也就是说一次 I/O 可以处理多个任务，还是 less 的例子，Gulp 的流程就是：
+
+                读取 less 文件 -> 编译成 css -> 压缩处理 -> 存储到磁盘
+
+                Gulp 作为任务类型的工具没有明显的缺点，唯一的问题可能就是完成相同的任务它需要写的代码更多一些，
+                所以除非是项目有历史包袱（原有项目就是基于 Grunt 构建）在 Grunt 与 Gulp 对比看来还是比较推荐 Gulp！
+
+                适用场景：
+                    通过上面的介绍可以看出它们侧重对整个过程的控制管理，实现简单、对架构无要求、不改变开发模式，所以非常适合前端、小型、需要快速启动的项目。
+
+            Webpack 的特点：
+
+                把一切都视为模块：不管是 CSS、JS、Image 还是 HTML 都可以互相引用，通过定义 entry.js，对所有依赖的文件进行跟踪，将各个模块通过 loader 和 plugins 处理，然后打包在一起。
+                按需加载：打包过程中 Webpack 通过 Code Splitting 功能将文件分为多个 chunks，还可以将重复的部分单独提取出来作为 commonChunk，从而实现按需加载。
+                Webpack 也是通过配置来实现管理，与 Grunt 不同的时，它包含的许多自动化的黑盒操作所以配置起来会简单很多（但遇到问题调试起来就很麻烦），一个典型的配置如下：
+
+                module.exports = {
+                    //插件项
+                    plugins: [commonsPlugin],
+                    //页面入口文件配置
+                    entry: {
+                        index : './src/js/page/index.js'
+                    },
+                    //入口文件输出配置
+                    output: {
+                        path: 'dist/js/page',
+                        filename: '[name].js'
+                    },
+                    module: {
+                        //加载器配置
+                        loaders: [
+                            { test: /\.css$/, loader: 'style-loader!css-loader' },
+                            { test: /\.js$/, loader: 'jsx-loader?harmony' },
+                            { test: /\.scss$/, loader: 'style!css!sass?sourceMap'},
+                            { test: /\.(png|jpg)$/, loader: 'url-loader?limit=8192'}
+                        ]
+                    },
+                    //其它解决方案配置
+                    resolve: {
+                        root: '/Users/Bell/github/flux-example/src', //绝对路径
+                        extensions: ['', '.js', '.json', '.scss'],
+                        alias: {
+                            AppStore : 'js/stores/AppStores.js',
+                            ActionType : 'js/actions/ActionType.js',
+                            AppAction : 'js/actions/AppAction.js'
+                        }
+                    }
+                };
+
+                不足：
+
+                上手比较难：官方文档混乱、配置复杂、难以调试（Webpack2 已经好了很多）对于新手而言需要经历踩坑的过程；
+                对于 Server 端渲染的多页应用有点力不从心：Webpack 的最初设计就是针对 SPA，所以在处理 Server 端渲染的多页应用时，
+                不管你如何 chunk，总不能真正达到按需加载的地步，往往要去考虑如何提取公共文件才能达到最优状态。
+
+                模块化与组件化
+                    提到 Webpack 就不得不说它的模块化加载方式，先来看下传统的模块化方式：
+
+                    ├── scripts/
+                    │    ├── dropdown.js
+                    │    ├── lazyload.js
+                    │    ├── modal.js
+                    │    └── slider.js
+                    ├── styles/
+                    │    ├── button.less
+                    │    ├── list.less
+                    │    ├── modal.less
+                    │    └── slider.less
+                    传统的模块化基于单种编程语言，目的是为了解耦和重用，而因为前端本身的特点（需要三种编程语言配合）以及能力限制，所以不能实现跨资源加载也就难以实现组件化。
+
+                    而 Webpack 打破的这种思维局限，它的 Require anything 的理念在实现模块化的同时也能够很方便实现组件化，借助 Webpack 就可以很轻松的实现这种代码组织结构：
+
+                    ├──components/
+                    │    ├── button/
+                    │    │    ├── button.js
+                    │    │    ├── button.less
+                    │    │    ├── dropdwon.js
+                    │    │    └── icon.png
+                     <input
+                type="text"
+                v-model="something">
+        <!--等价于-->
+        <input
+                type="text"
+                v-bind:value="something"
+                v-on:input="something = $event.target.value">
+                    │    ├── modal/
+                    │    ├── slider/
+                
+                一旦实现组件化，那么我们的项目开发方式和分工合作方式就可以升级，可以实现分组件并行开发，也可以方便的引用其它项目使用的组件
+
+                适用场景：
+                    综上所述，Webpack 特别适合配合 React.js、Vue.js 构建单页面应用以及需要多人合作的大型项目，在规范流程都已约定好的情况下往往能极大的提升开发效率与开发体验。
+
+<Q&A 294> v-model
+
+        v-model 是一种语法糖
+         <input type="text" v-model="something">
+         <!--等价于-->
+         <input type="text" v-bind:value="something" v-on:input="something = $event.target.value">
+
+         v-model在 普通input上
+            一定要明确在给 <input /> 元素添加 v-model 属性时，默认会把 value 作为元素的属性，然后把 'input' 事件作为实时传递 value 的触发事件（具体参考语法糖的解释）
+
+        v-model用在组件上
+            给组件添加 v-model 属性时，默认会把 value 作为组件的属性，然后把 'input' 值作为给组件绑定事件时的事件名
+
+        html:
+            <div id="demo">
+                <currency-input v-model="price"></currentcy-input>
+                <span>{{price}}</span>
+            </div>
+
+        js:
+            Vue.component('currency-input', {
+                template: `
+                <span>
+                <input
+                    ref="input"
+                    :value="value"
+                    <!--为什么这里把 'input' 作为触发事件的事件名？`input` 在哪定义的？-->
+                    @input="$emit('input', $event.target.value)"
+                >
+                </span>
+                `,
+                props: ['value'],// 为什么这里要用 value 属性，value在哪里定义的？貌似没找到啊？
+            })
+
+            var demo = new Vue({
+                el: '#demo',
+                data: {
+                    price: 100,
+                }
+            })
+
+        子组件中的v-model相当于<currency-input :value="price" @input="price = arguments[0]"></currency-input>
+        js中@input="$emit('input', $event.target.value)" 子组件在监听input事件发生的时候（即@input）,向父组件传递了input($emit中的input)事件，并且传递了当前子组件的price值。
+        而在父组件中，监听了自定义事件input，当自定义事件input触发后，将当前父组件自身的price值改为子组件中$emit上来的值（$event.target.value 是作为$emit传递的参数，所以是arguments[0]）
+
+        v-model存在的问题
+            对于复选框或者单选框的常见组件时，由于v-model默认传的是value，不是checked，触发事件也不是oninput而是onchange
+
+            对于单纯的input type='checkbox'
+            <input type="checkbox" :checked="status" @change="status = $event.target.checked" />
+
+            当用到组件上时：
+
+            <my-checkbox v-model="foo"></my-checkbox>
+
+            Vue.component('my-checkbox', {
+                tempalte: `<input 
+                        type="checkbox"
+                        @change="$emit('input', $event.target.checked)"
+                        :checked="value"
+                    />`
+                props: ['value'],
+            })
+
+            这个时候需要Vue的model选项
+            model选项可以指定当前的事件类型和传入的props
+
+            <my-checkbox v-model="foo"></my-checkbox>
+
+            Vue.component('my-checkbox', {
+                tempalte: `<input 
+                        type="checkbox"
+                        <!--这里就不用 input 了，而是 balabala-->
+                        @change="$emit('balabala', $event.target.checked)"
+                        :checked="value"
+                    />`
+                props: ['checked'], //这里就不用 value 了，而是 checked
+                model: { // model选项来指定
+                    prop: 'checked',
+                    event: 'balabala'
+                },
+            })
+
+
+<Q&A 295>
+<Q&A 296>
+<Q&A 297>
+<Q&A 298>
+<Q&A 299>
 <Q&A 125>
 <Q&A 125>
 <Q&A 125>
