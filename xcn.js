@@ -20,17 +20,17 @@ Promise.prototype.then = function(isResolve,isReject){
 
     if(this._status === 'fullfille{d')
         var _isPromise = isResolve(this._msg);
-        if(_isPromise instanceof _Promise){  
-                return _Promise;
+        if(_isPromise instanceof Promise){  
+                return _isPromise;
         }
-        return this;  //省略了其他一些具体情况
+        //return this;  //省略了其他一些具体情况
     }else if(this._status === 'rejected' && arguments[1]){  
         var err = new TypeError(this._msg);
         var _isPromise = isReject(err);
-        if(_isPromise instanceof _Promise){  
-            return _Promise;
+        if(_isPromise instanceof Promise){  
+            return _isPromise;
         }
-        return this;   //省略了其他一些具体情况 
+        //return this;   //省略了其他一些具体情况 
     } 
 }
 
